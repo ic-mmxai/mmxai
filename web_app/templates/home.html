@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {% set active_page = 'home' %} {% block body %}
+
+<div class="home-page text-center">
+  <img
+    src="{{ url_for('static', filename='img/black-box.png') }}"
+    alt="MMXAI logo"
+    width="200"
+    height="200"
+  />
+  <h1 class="display-3" style="font-weight: lighter; color: white">MMXAI</h1>
+  <div>
+    <p style="font-size: 20px; font-weight: normal;">
+      <em>An interface for explaining multimodal AI models.</em>
+    </p>
+    <div>
+      <a
+        type="button"
+        href="/explainers/hateful-memes"
+        class="btn btn-primary btn-lg px-4 me-sm-3"
+      >
+        Get Started
+      </a>
+      <a
+        type="button"
+        href="/docs"
+        class="btn btn-outline-secondary btn-lg px-4"
+      >
+        Docs Page
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

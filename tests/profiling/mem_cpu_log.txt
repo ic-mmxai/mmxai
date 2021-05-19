@@ -1,0 +1,136 @@
+python explanation_mem_cpu.py MMBT lime
+Your uploaded image and text combination looks like a HATEFUL meme, with 97.89% confidence.
+python explanation_mem_cpu.py MMBT shap
+Your uploaded image and text combination looks like a HATEFUL meme, with 97.89% confidence.
+python explanation_mem_cpu.py MMBT torchray
+Your uploaded image and text combination looks like a HATEFUL meme, with 97.89% confidence.
+profiling.png
+kill the jews and muslims for being anti-white
+extremal_perturbation:
+- target: 1
+- areas: [0.12]
+- variant: preserve
+- max_iter: 800
+- step/sigma: 7, 21
+- image size: [1, 3, 224, 224]
+- reward function: contrastive_reward
+- Perturbation:
+  - type: blur
+  - num_levels: 8
+  - pyramid shape: [8, 3, 224, 224]
+- mask resolution:
+  torch.Size([1, 1, 32, 32])
+error:
+MMBT,torchray
+
+python explanation_mem_cpu.py LateFusion lime
+Your uploaded image and text combination looks like a HATEFUL meme, with 97.82% confidence.
+python explanation_mem_cpu.py LateFusion shap
+Your uploaded image and text combination looks like a HATEFUL meme, with 97.82% confidence.
+python explanation_mem_cpu.py LateFusion torchray
+Your uploaded image and text combination looks like a HATEFUL meme, with 97.82% confidence.
+profiling.png
+kill the jews and muslims for being anti-white
+extremal_perturbation:
+- target: 1
+- areas: [0.12]
+- variant: preserve
+- max_iter: 800
+- step/sigma: 7, 21
+- image size: [1, 3, 224, 224]
+- reward function: contrastive_reward
+- Perturbation:
+  - type: blur
+  - num_levels: 8
+  - pyramid shape: [8, 3, 224, 224]
+- mask resolution:
+  torch.Size([1, 1, 32, 32])
+error:
+LateFusion,torchray
+
+python explanation_mem_cpu.py ViLBERT lime
+loading configuration file cache
+loading weights file /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin
+All model checkpoint weights were used when initializing GeneralizedRCNN.
+
+All the weights of GeneralizedRCNN were initialized from the model checkpoint at /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use GeneralizedRCNN for predictions without further training.
+Your uploaded image and text combination looks like a HATEFUL meme, with 100.00% confidence.
+python explanation_mem_cpu.py ViLBERT shap
+loading configuration file cache
+loading weights file /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin
+All model checkpoint weights were used when initializing GeneralizedRCNN.
+
+All the weights of GeneralizedRCNN were initialized from the model checkpoint at /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use GeneralizedRCNN for predictions without further training.
+Your uploaded image and text combination looks like a HATEFUL meme, with 100.00% confidence.
+python explanation_mem_cpu.py ViLBERT torchray
+loading configuration file cache
+loading weights file /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin
+All model checkpoint weights were used when initializing GeneralizedRCNN.
+
+All the weights of GeneralizedRCNN were initialized from the model checkpoint at /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use GeneralizedRCNN for predictions without further training.
+Your uploaded image and text combination looks like a HATEFUL meme, with 100.00% confidence.
+profiling.png
+kill the jews and muslims for being anti-white
+extremal_perturbation:
+- target: 1
+- areas: [0.12]
+- variant: preserve
+- max_iter: 800
+- step/sigma: 7, 21
+- image size: [1, 3, 224, 224]
+- reward function: contrastive_reward
+- Perturbation:
+  - type: blur
+  - num_levels: 8
+  - pyramid shape: [8, 3, 224, 224]
+- mask resolution:
+  torch.Size([1, 1, 32, 32])
+error:
+ViLBERT,torchray
+
+python explanation_mem_cpu.py VisualBERT lime
+loading configuration file cache
+loading weights file /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin
+All model checkpoint weights were used when initializing GeneralizedRCNN.
+
+All the weights of GeneralizedRCNN were initialized from the model checkpoint at /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use GeneralizedRCNN for predictions without further training.
+Your uploaded image and text combination looks like a HATEFUL meme, with 99.78% confidence.
+python explanation_mem_cpu.py VisualBERT shap
+loading configuration file cache
+loading weights file /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin
+All model checkpoint weights were used when initializing GeneralizedRCNN.
+
+All the weights of GeneralizedRCNN were initialized from the model checkpoint at /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use GeneralizedRCNN for predictions without further training.
+Your uploaded image and text combination looks like a HATEFUL meme, with 99.78% confidence.
+python explanation_mem_cpu.py VisualBERT torchray
+loading configuration file cache
+loading weights file /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin
+All model checkpoint weights were used when initializing GeneralizedRCNN.
+
+All the weights of GeneralizedRCNN were initialized from the model checkpoint at /home/chenyu/Documents/MSc Computing/Group Project/group_project_draft/jjq_models/model_finetuned.bin.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use GeneralizedRCNN for predictions without further training.
+Your uploaded image and text combination looks like a HATEFUL meme, with 99.78% confidence.
+profiling.png
+kill the jews and muslims for being anti-white
+extremal_perturbation:
+- target: 1
+- areas: [0.12]
+- variant: preserve
+- max_iter: 800
+- step/sigma: 7, 21
+- image size: [1, 3, 224, 224]
+- reward function: contrastive_reward
+- Perturbation:
+  - type: blur
+  - num_levels: 8
+  - pyramid shape: [8, 3, 224, 224]
+- mask resolution:
+  torch.Size([1, 1, 32, 32])
+error:
+VisualBERT,torchray
+

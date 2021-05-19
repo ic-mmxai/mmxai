@@ -1,0 +1,9 @@
+Filename: /home/chenyu/Documents/MSc Computing/Group Project/explainable-multimodal-classification/tests/profiling/inpainting_time.py
+
+Line #    Mem usage    Increment  Occurences   Line Contents
+============================================================
+     5    108.8 MiB    108.8 MiB           1   def inpaint():
+     6    217.6 MiB    108.8 MiB           1       remover = SmartTextRemover("../../mmxai/text_removal/frozen_east_text_detection.pb")
+     7    336.7 MiB    119.1 MiB           1       img = remover.inpaint("https://www.iqmetrix.com/hubfs/Meme%2021.jpg")
+
+

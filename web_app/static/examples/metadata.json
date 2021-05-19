@@ -1,0 +1,132 @@
+{
+  "61570": {
+    "imgName": "examples/61570/61570.png",
+    "imgTexts": "you can't hate jews if there is no more jews",
+    "clsResult": "Your uploaded image and text combination looks like a <strong>HATEFUL</strong> meme, with 97.16% confidence.",
+    "shap": {
+      "modelType": "LateFusion",
+      "imgExp": "examples/61570/61570_shap_img.png",
+      "txtExp": "examples/61570/61570_shap_txt.png",
+      "imgMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The input image is segmented into 65 regions, and text string is split into 10 features. The shapley values of those 75 features represent their additive contributions towards the model output for the current inclination selected,  0.978, on top of the base value. The base value, 0.0364, is the expected model output without those features. The sum of all shapley values and the base value should equate the selected model output, i.e.</p><p><em>model_output = base_value + total_image_shapley_values + total_text_shapley_values</em>.</p><p>The sum of shapley values for the image features is 0.5703.</p><span style=\"font-size:0.75rem\">*note that the results may change slightly if the number of evaluations is small due to random sampling in the algorithm</span>",
+	  "txtMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The sum of shapley values of the 10 text features is 0.3712.</p><p>Indeed,  0.978 &#8776 0.0364 + 0.5703 +  0.3712.</p><span style=\"font-size:0.75rem\">*note: if there are repeated words in the input, their shapley values are summed.</span>"
+	},
+    "lime": {
+      "modelType": "LateFusion",
+      "imgExp": "examples/61570/61570_lime_img.png",
+      "txtExp": "examples/61570/61570_lime_txt.png",
+      "imgMsg": "<p>Your image has been segmented into 30 small pixel areas, the ones that most encourage (or discourage) your model decision has been marked by the yellow boundaries.</p><p>Each small pixel area in your image input and each distinct word in your text input are called an interpretable feature. There are 40 features in total (30 pixel areas and 10 words). Among the top 10 such features that encourage (or discourage) your model decision, 6 are from the text (the top[1][2][3][5][6][7]th), 4 are from the image (the top[4][8][9][10]th, some adjacent regions might merge into a larger area).</p> For this prediction, the relative importance of text and image inputs to your model decision are respectively 97.28% and 2.72%",
+      "txtMsg": "For this result, the value associated with each word indicates how much it pushes the model towards making a hateful decision."
+    },
+    "torchray": {
+      "modelType": "LateFusion",
+      "imgExp": "examples/61570/61570_torchray_img.png",
+      "txtExp": "examples/61570/61570_torchray_txt.png",
+      "imgMsg": "The key area that leads to hateful result have been unmasked in the figure",
+      "txtMsg": "<p>The words : {there}, {you}, are the most significant features that support Not hateful result.</p> The words : {jews}, {jews}, {can't}, are the most significant features that support hateful result."
+    }
+  },
+  "40375": {
+    "imgName": "examples/40375/40375.png",
+    "imgTexts": "when Japan thinks you are gonna invade their mainland",
+    "clsResult": "Your uploaded image and text combination looks like a <strong>HATEFUL</strong> meme, with 94.79% confidence.",
+    "shap": {
+      "modelType": "LateFusion",
+      "imgExp": "examples/40375/40375_shap_img.png",
+      "txtExp": "examples/40375/40375_shap_txt.png",
+      "imgMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The input image is segmented into 52 regions, and text string is split into 9 features. The shapley values of those 61 features represent their additive contributions towards the model output for the current inclination selected,  0.948, on top of the base value. The base value, 0.0374, is the expected model output without those features. The sum of all shapley values and the base value should equate the selected model output, i.e.</p><p><em>model_output = base_value + total_image_shapley_values + total_text_shapley_values</em>.</p><p>The sum of shapley values for the image features is 0.5587.</p><span style=\"font-size: 0.75rem\">*note that the results may change slightly if the number of evaluations is small due to random sampling in the algorithm</span>",
+      "txtMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The sum of shapley values of the 9 text features is 0.3518.</p><p>Indeed,  0.948 &#8776 0.0374 + 0.5587 +  0.3518.</p><span style=\"font-size:0.75rem\">*note: if there are repeated words in the input, their shapley values are summed.</span>"
+    },
+    "lime": {
+      "modelType": "LateFusion",
+      "imgExp": "examples/40375/40375_lime_img.png",
+      "txtExp": "examples/40375/40375_lime_txt.png",
+      "imgMsg": "Your image has been segmented into 112 small pixel areas, the ones that most encourage (or discourage) your model decision has been marked by the yellow boundaries.</p><p>Each small pixel area in your image input and each distinct word in your text input are called an interpretable feature. There are 121 features in total (112 pixel areas and 9 words). Among the top 10 such features that encourage (or discourage) your model decision, 4 are from the text (the top[1][2][3][5][6][7]th), 4 are from the image (the top[1][2][4][8]th, some adjacent regions might merge into a larger area).</p>For this prediction, the relative importance of text and image inputs to your model decision are respectively 17.8% and 82.2%",
+      "txtMsg": "For this result, the value associated with each word indicates how much it pushes the model towards making a hateful decision."
+    },
+    "torchray": {
+      "modelType": "LateFusion",
+      "imgExp": "examples/40375/40375_torchray_img.png",
+      "txtExp": "examples/40375/40375_torchray_txt.png",
+      "imgMsg": "The key area that leads to hateful result have been unmasked in the figure",
+      "txtMsg": "<p>The words : {when}, {thinks}, {are}, are the most significant features that support Not hateful result.</p>The words : {japan}, {mainland}, {gonna}, are the most significant features that support hateful result."
+    }
+  },
+  "10398": {
+    "imgName": "examples/10398/10398.png",
+    "imgTexts": "arabs arabs how could the jews do this to us",
+    "clsResult": "Your uploaded image and text combination looks like a <strong>HATEFUL</strong> meme, with 98.31% confidence.",
+    "shap": {
+      "modelType": "MMBT",
+      "imgExp": "examples/10398/10398_shap_img.png",
+      "txtExp": "examples/10398/10398_shap_txt.png",
+      "imgMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The input image is segmented into 69 regions, and text string is split into 10 features. The shapley values of those 79 features represent their additive contributions towards the model output for the current inclination selected,  0.983, on top of the base value. The base value, 0.0796, is the expected model output without those features. The sum of all shapley values and the base value should equate the selected model output, i.e.</p><p><em>model_output = base_value + total_image_shapley_values + total_text_shapley_values</em>.</p><p>The sum of shapley values for the image features is 0.0376.</p><span style=\"font-size:0.75rem\">*note that the results may change slightly if the number of evaluations is small due to random sampling in the algorithm</span>",
+      "txtMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The sum of shapley values of the 10 text features is 0.8658.</p><p>Indeed,  0.983 &#8776 0.0796 + 0.0376 +  0.8658.</p><span style=\"font-size:0.75rem\">*note: if there are repeated words in the input, their shapley values are summed.</span>"
+    },
+    "lime": {
+      "modelType": "MMBT",
+      "imgExp": "examples/10398/10398_lime_img.png",
+      "txtExp": "examples/10398/10398_lime_txt.png",
+      "imgMsg": "<p>Your image has been segmented into 92 small pixel areas, the ones that most encourage (or discourage) your model decision has been marked by the yellow boundaries.</p><p>Each small pixel area in your image input and each distinct word in your text input are called an interpretable feature. There are 101 features in total (92 pixel areas and 9 words). Among the top 10 such features that encourage (or discourage) your model decision, 3 are from the text (the top[1][2][4]th), 7 are from the image (the top[3][5][6][7][8][9][10]th, some adjacent regions might merge into a larger area).</p>For this prediction, the relative importance of text and image inputs to your model decision are respectively 83.57% and 16.43%",
+      "txtMsg": "For this result, the value associated with each word indicates how much it pushes the model towards making a hateful decision."
+    },
+    "torchray": {
+      "modelType": "MMBT",
+      "imgExp": "examples/10398/10398_torchray_img.png",
+      "txtExp": "examples/10398/10398_torchray_txt.png",
+      "imgMsg": "The key area that leads to hateful result have been unmasked in the figure",
+      "txtMsg": "<p>The words : are the most significant features that support Not hateful result.</p> The words : {jews}, {arabs}, {to}, are the most significant features that support hateful result."
+    }
+  },
+  "91526": {
+    "imgName": "examples/91526/91526.png",
+    "imgTexts": "what we did to black people is pretty fucked up most of 'em still can't even read",
+    "clsResult": "Your uploaded image and text combination looks like a <strong>HATEFUL</strong> meme, with 99.86% confidence.",
+    "shap": {
+      "modelType": "MMBT",
+      "imgExp": "examples/91526/91526_shap_img.png",
+      "txtExp": "examples/91526/91526_shap_txt.png",
+      "imgMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The input image is segmented into 58 regions, and text string is split into 17 features. The shapley values of those 75 features represent their additive contributions towards the model output for the current inclination selected,  0.999, on top of the base value. The base value, 0.0907, is the expected model output without those features. The sum of all shapley values and the base value should equate the selected model output, i.e.</p><p><em>model_output = base_value + total_image_shapley_values + total_text_shapley_values</em>.</p><p>The sum of shapley values for the image features is 0.2266.</p><span style=\"font-size:0.75rem\">*note that the results may change slightly if the number of evaluations is small due to random sampling in the algorithm</span>",
+      "txtMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Non-hateful).</p><p><strong>Details</strong>:<br>The sum of shapley values of the 17 text features is 0.6812.</p><p>Indeed,  0.999 &#8776 0.0907 + 0.2266 +  0.6812.</p><span style=\"font-size:0.75rem\">*note: if there are repeated words in the input, their shapley values are summed.</span>"
+    },
+    "lime": {
+      "modelType": "MMBT",
+      "imgExp": "examples/91526/91526_lime_img.png",
+      "txtExp": "examples/91526/91526_lime_txt.png",
+      "imgMsg": "<p>Your image has been segmented into 151 small pixel areas, the ones that most encourage (or discourage) your model decision has been marked by the yellow boundaries.</p><p>Each small pixel area in your image input and each distinct word in your text input are called an interpretable feature. There are 168 features in total (151 pixel areas and 17 words). Among the top 10 such features that encourage (or discourage) your model decision, 5 are from the text (the top[1][2][3][4][5]th), 5 are from the image (the top[6][7][8][9][10]th, some adjacent regions might merge into a larger area).</p>For this prediction, the relative importance of text and image inputs to your model decision are respectively 49.01% and 50.99%",
+      "txtMsg": "For this result, the value associated with each word indicates how much it pushes the model towards making a hateful decision."
+    },
+    "torchray": {
+      "modelType": "MMBT",
+      "imgExp": "examples/91526/91526_torchray_img.png",
+      "txtExp": "examples/91526/91526_torchray_txt.png",
+      "imgMsg": "The key area that leads to hateful result have been unmasked in the figuree",
+      "txtMsg": "<p>The words : {we}, {still}, {pretty}, are the most significant features that support Not hateful result.</p> The words : {black}, {people}, {fucked}, are the most significant features that support hateful result."
+    }
+  },
+  "37426": {
+    "imgName": "examples/37426/37426.png",
+    "imgTexts": "illegal aliens should be america's number 1 export",
+    "clsResult": "Your uploaded image and text combination looks like a <strong>HATEFUL</strong> meme, with 98.77% confidence.",
+    "shap": {
+      "modelType": "MMBT",
+      "imgExp": "examples/37426/37426_shap_img.png",
+      "txtExp": "examples/37426/37426_shap_txt.png",
+      "imgMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Not Hateful).</p><p><strong>Details</strong>:<br>The input image is segmented into 41 regions, and text string is split into 8 features. The shapley values of those 49 features represent their additive contributions towards the model output for the current inclination selected,  0.988, on top of the base value. The base value, 0.0454, is the expected model output without those features. The sum of all shapley values and the base value should equate the selected model output, i.e.</p><p><em>model_output = base_value + total_image_shapley_values + total_text_shapley_values</em>.</p><p>The sum of shapley values for the image features is 0.7346.</p><span style=\"font-size:0.75rem\">*note: the results may change slightly if the number of evaluations is small due to random sampling in the algorithm</span>",
+      "txtMsg": "<p><strong>tl;dr:</strong><br> <span style=\"color: red\">Red</span> (<span style=\"color: blue\">Blue</span>) regions move the model output towards Hateful (Not Hateful).</p><p><strong>Details</strong>:<br>The sum of shapley values of the 8 text features is 0.2077.</p><p>Indeed,  0.988 &#8776 0.0454 + 0.7346 +  0.2077.</p><span style=\"font-size:0.75rem\">*note: if there are repeated words in the input, their shapley values are summed.</span>"
+    },
+    "lime": {
+      "modelType": "MMBT",
+      "imgExp": "examples/37426/37426_lime_img.png",
+      "txtExp": "examples/37426/37426_lime_txt.png",
+      "imgMsg": "<p>Your image has been segmented into 187 small pixel areas, the ones that most encourage (or discourage) your model decision has been marked by the yellow boundaries.</p><p>Each small pixel area in your image input and each distinct word in your text input are called an interpretable feature. There are 195 features in total (187 pixel areas and 8 words). Among the top 10 such features that encourage (or discourage) your model decision, 4 are from the text (the top[1][5][6][10]th), 6 are from the image (the top[2][3][4][7][8][9]th, some adjacent regions might merge into a larger area).</p>For this prediction, the relative importance of text and image inputs to your model decision are respectively 77.1% and 22.9%",
+      "txtMsg": "For this result, the value associated with each word indicates how much it pushes the model towards making a hateful decision."
+    },
+    "torchray": {
+      "modelType": "MMBT",
+      "imgExp": "examples/37426/37426_torchray_img.png",
+      "txtExp": "examples/37426/37426_torchray_txt.png",
+      "imgMsg": "The key area that leads to hateful result have been unmasked in the figure",
+      "txtMsg": "<p>The words : {should}, {be}, are the most significant features that support Not hateful result.</p> The words : {export}, {americas}, {number}, are the most significant features that support hateful result."
+    }
+  }
+}

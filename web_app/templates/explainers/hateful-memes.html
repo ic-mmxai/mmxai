@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+
+{% set active_page = 'explainer' %}
+
+{% block override_style %}
+  <style>
+      body {
+          background-color: rgb(247, 247, 247);
+          background-image: none;
+      }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <!--modal for selecting example memes-->
+  <div class="modal fade" id="selectExampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Select an example meme</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="selExample" method="POST" action="{{ url_for('select_example') }}" enctype="multipart/form-data">
+            <input type="radio" class="visually-hidden" name="exampleID" id="e001" value="61570">
+            <label for="e001" class="img-label">
+              <img class="example-gallery" src="{{ url_for('static', filename='examples/61570/61570.png') }}" alt="example 001">
+            </label>
+            <input type="radio" class="visually-hidden" name="exampleID" id="e002" value="40375">
+            <label for="e002" class="img-label">
+              <img class="example-gallery" src="{{ url_for('static', filename='examples/40375/40375.png') }}" alt="example 002">
+            </label>
+            <input type="radio" class="visually-hidden" name="exampleID" id="e003" value="10398">
+            <label for="e003" class="img-label">
+              <img class="example-gallery" src="{{ url_for('static', filename='examples/10398/10398.png') }}" alt="example 003">
+            </label>
+            <input type="radio" class="visually-hidden" name="exampleID" id="e004" value="91526">
+            <label for="e004" class="img-label">
+              <img class="example-gallery" src="{{ url_for('static', filename='examples/91526/91526.png') }}" alt="example 004">
+            </label>
+            <input type="radio" class="visually-hidden" name="exampleID" id="e005" value="37426">
+            <label for="e005" class="img-label">
+              <img class="example-gallery" src="{{ url_for('static', filename='examples/37426/37426.png') }}" alt="example 005">
+            </label>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" form="selExample" class="btn btn-primary" onclick="resetLocalStorage()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--modal for uploading images-->
+  <div class="modal fade" id="uploadImgModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Upload an Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="uploadImg" method="POST" action="{{ url_for('upload_image') }}" enctype="multipart/form-data">
+            <input type="file" name="inputImg" accept=".jpg, .png">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" form="uploadImg" class="btn btn-primary" onclick="resetLocalStorage()">Upload</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--modal for selecting models or uploading user checkpoints-->
+  <div class="modal fade" id="UploadModelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Select a Model or Upload Checkpoints</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="uploadModel" method="POST" action="{{ url_for('upload_model') }}" enctype="multipart/form-data">
+            <h5>Please select an option:</h5>
+            <select onchange="showOptionForm(this)" class="form-select" aria-label="select options" name="selectOption">
+              <option disabled selected value> -- Select an Option --</option>
+              <option value="internalModel">I want to use MMF model with my own checkpoint</option>
+              <option value="selfModel">I want to use a self-defined model</option>
+              <option value="noModel">I don't have a Model</option>
+            </select>
+            <div id="internalModel" style="display:none;">
+              <hr>
+              <h5>Please select an internal model:</h5>
+              <select class="form-select" aria-label="select model" name="selectModel">
+                <option value="MMBT">MMBT</option>
+                <option value="LateFusion">LateFusion</option>
+                <option value="ViLBERT">ViLBERT</option>
+                <option value="VisualBERT">VisualBERT</option>
+              </select>
+              <hr>
+              <h5>Please upload your checkpoint of the selected model:</h5>
+              <input type="file" name="inputCheckpoint1" accept=".ckpt">
+            </div>
+            <div id="selfModel" style="display:none;">
+              <hr>
+              <h5>Please select a tokenizer:</h5>
+              <select class="form-select" aria-label="select model" name="tokenizer">
+                <option value="BertTokenizer">BertTokenizer</option>
+                <option value="AutoTokenizer">AutoTokenizer</option>
+                <option value="BertTokenizerFast">BertTokenizerFast</option>
+                <option value="XLNetTokenizer">XLNetTokenizer</option>
+              </select>
+              <hr>
+              <h5>Please upload your ONNX model:</h5>
+              <input type="file" name="inputCheckpoint2">
+            </div>
+            <div id="noModel" style="display:none;">
+              <hr>
+              <h5>Please select a pre-trained model</h5>
+              <select class="form-select" aria-label="select existing model" name="selectExistingModel">
+                <option value="MMBT">MMBT</option>
+                <option value="LateFusion">LateFusion</option>
+                <option value="ViLBERT">ViLBERT</option>
+                <option value="VisualBERT">VisualBERT</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" form="uploadModel" class="btn btn-primary">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--modal for configuring SHAP parameters-->
+  <div class="modal fade" id="customiseShap" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Select parameters for SHAP method</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h5 data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="left" title="Permutation method produces more stable result, but may take longer to run.">Algorithm</h5>
+          <select id="selectShapAlgo" class="form-select" aria-label="select algorithms" form="predict" name="shapAlgo">
+            <option value="partition">Partition</option>
+            <option value="permutation">Permutation</option>
+          </select>
+          <hr>
+          <h5 data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="left" title="The maximum number of evaluations allowed, we recommend a value between 300 and 500.">Maximum Evaluations</h5>
+          <div class="row">
+            <div class="col-md-1">
+              <span id="shapEvalValue"></span>
+            </div>
+            <div class="col-md-11">
+              <input id="shapEvalSlider" type="range" form="predict" name="shapMaxEval"
+                     class="form-range" min="50" max="1000">
+            </div>
+          </div>
+          <hr>
+          <h5 data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="left" title="Number of masked samples to be evaluated at once.">Batch Size</h5>
+          <div class="row">
+            <div class="col-md-1">
+              <span id="shapBatchValue"></span>
+            </div>
+            <div class="col-md-11">
+              <input id="shapBatchSlider" type="range" form="predict" name="shapBatchSize"
+                     class="form-range" min="10" max="100">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--modal for configuring LIME parameters-->
+  <div class="modal fade" id="customiseLime" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Select parameters for LIME method</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h5 data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="left" title="Predict">Number of Synthetic Data Samples</h5>
+          <div class="row">
+            <div class="col-md-1">
+              <span id="limeSamplesNumberValue"></span>
+            </div>
+            <div class="col-md-11">
+              <input id="limeSamplesNumberSlider" type="range" form="predict" name="limeSamplesNumber"
+                     class="form-range" min="50" max="3000">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--modal for configuring TorchRay parameters-->
+  <div class="modal fade" id="customiseTorchray" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Select parameters for TorchRay method</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h5 data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="left" title="Predict">Max Iteration</h5>
+          <div class="row">
+            <div class="col-md-1">
+              <span id="torchrayMaxIterationValue"></span>
+            </div>
+            <div class="col-md-11">
+              <input id="torchrayMaxIterationSlider" type="range" form="predict" name="torchrayMaxIteration"
+                     class="form-range" min="400" max="1200">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container control-bar" id="ctrlBar">
+    <div class="row">
+      <div class="col-sm-10">
+        <div class="row">
+          <div class="col-sm-4 text-center text-control-bar">
+            {% if curOption %}
+              <b>{{ curOption }}</b>
+            {% else %}
+              No model selected, please select a model
+            {% endif %}
+            {% if fileName %}
+              <b><em>: {{ fileName }}</em></b>
+            {% endif %}
+            <button id="btnUploadMdl" type="button" class="btn btn-outline-secondary btn-control-bar btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#UploadModelModal">Select Model
+            </button>
+          </div>
+          <div class="col-sm-2 text-center text-control-bar">
+            {% if imgName %}
+              <b><em>{{ imgName.split('/')[-1] }}</em></b>
+            {% else %}
+              Please upload an image
+            {% endif %}
+            <button id="btnUploadImg" type="button" class="btn btn-outline-secondary btn-control-bar btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#uploadImgModal">Upload Image
+            </button>
+          </div>
+          <div class="col-sm-2 text-center text-control-bar">
+            Remove caption
+            <a id="btnInpaint" href="/inpaint" class="btn btn-outline-secondary btn-control-bar btn-sm"
+               data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="bottom"
+               title="Try to remove texts on your input image using our inpainting engine.">Inpaint</a>
+            <a id="btnInpaint" href="/restoreImage" class="btn btn-outline-secondary btn-control-bar btn-sm"
+               data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="bottom"
+               title="Undo inpainting">Restore</a>
+          </div>
+          <div class="col-sm-2 text-center text-control-bar">
+            <span>Explanation method</span>
+            <select id="selectMethod" class="form-select form-select-method form-select-sm" aria-label="select method"
+                    form="predict" name="expMethod" data-bs-toggle="tooltip" data-bs-trigger="hover"
+                    data-bs-placement="bottom"
+                    title="Select a method used to explain your input samples. You may configure parameters by clicking the gear icon on the right">
+              <option value="lime">LIME</option>
+              <option value="shap">SHAP</option>
+              <option value="torchray">TorchRay</option>
+            </select>
+            <a id="configureMethod" href="#" style="color: #1c1c1c" onclick="configParam()" data-bs-toggle="tooltip" data-bs-trigger="hover"
+               data-bs-placement="bottom" title="Configure parameters">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear"
+                   viewBox="0 0 16 16">
+                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"></path>
+                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"></path>
+              </svg>
+            </a>
+          </div>
+          <div class="col-sm-2 text-center text-control-bar">
+            Select an inclination
+            <select id="selectInc" class="form-select form-select-inc form-select-sm" aria-label="select inclination"
+                    form="predict" name="expInc" data-bs-toggle="tooltip" data-bs-trigger="hover"
+                    data-bs-placement="bottom"
+                    title="If you want to see what factors in image/texts support model's prediction, select 'Encourage'. If you want to see what factors are against model's prediction, select 'Discourage'">
+              <option value="encourage">Encourage</option>
+              <option value="discourage">Discourage</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-1 text-center">
+        <button id="btnTutorial" type="button" class="btn btn-tutorial"
+                data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Tutorial">Tutorial
+        </button>
+      </div>
+      <div class="col-sm-1 text-center">
+        <button id="btnPredict" type="submit" form="predict" onclick="explaining()" class="btn btn-predict"
+                data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Explain">Explain
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container control-bar" id="ctrlBarEg" style="display:none;">
+    <div class="row">
+      <div class="col-sm-10">
+        <div class="row">
+          <div class="col-sm-6 text-center text-control-bar" style="margin-top: 20px">
+            <span>Model used in this example:</span>
+            {% if curModelEg %}
+              <b>{{ curModelEg }}</b>
+            {% else %}
+              select an example & method and press <span style="color: #fd6473; font-weight: bold;">Explain</span> first
+            {% endif %}
+          </div>
+          <div class="col-sm-2 text-center text-control-bar">
+            Select a example meme
+            <button id="btnSelExampleImg" type="button" class="btn btn-outline-secondary btn-control-bar btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#selectExampleModal">Example Library
+            </button>
+          </div>
+          <div class="col-sm-2 text-center text-control-bar">
+            <span>Explanation method</span>
+            <form id="explainEg" method="POST" action="{{ url_for('fetch_example') }}" enctype="multipart/form-data">
+              <select id="selectMethodEg" class="form-select form-select-method form-select-sm"
+                      aria-label="select method" name="expMethod" data-bs-toggle="tooltip" data-bs-trigger="hover"
+                      data-bs-placement="bottom" title="Select a method used to explain your selected example meme.">
+                <option value="lime">LIME</option>
+                <option value="shap">SHAP</option>
+                <option value="torchray">TorchRay</option>
+              </select>
+            </form>
+          </div>
+          <div class="col-sm-2 text-center text-control-bar">
+            Inclination
+            <select id="selectIncEg" class="form-select form-select-inc form-select-sm"
+                    aria-label="select inclination" form="explainEg" name="expInc" data-bs-toggle="tooltip"
+                    data-bs-trigger="hover" data-bs-placement="bottom"
+                    title="You cannot select inclination in example mode. All the examples given were explained in encouraged inclination.">
+              <option value="encourage">Encourage</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-1 text-center">
+        <button id="btnTutorialEg" type="button" class="btn btn-tutorial"
+                data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Tutorial">Tutorial
+        </button>
+      </div>
+      <div class="col-sm-1 text-center">
+        <button id="btnExplainEg" type="submit" form="explainEg" onclick="explainingEg()" class="btn btn-predict"
+                data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Explain">Explain
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-2 text-center"></div>
+      <div class="col-sm-8 text-center">
+        {% if clsResult %}
+          <span class="inf-area text-center" id="infArea">{{ clsResult | safe }}</span>
+        {% else %}
+          <span class="inf-area text-center" id="infArea">
+            New here? Start tutorial by clicking the <span style="color: #09cb71; font-weight: bold;">Tutorial</span> Button.
+          </span>
+        {% endif %}
+        {% if clsResultEg %}
+          <span class="inf-area text-center" id="infAreaEg">{{ clsResultEg | safe }}</span>
+        {% else %}
+          <span class="inf-area text-center" id="infAreaEg">
+            You are now in example mode. Click the <span style="color: #09cb71; font-weight: bold;">Tutorial</span> button if you are unfamiliar.
+          </span>
+        {% endif %}
+      </div>
+      <div class="col-sm-2 text-center">
+        <div class="text-center" style="padding:5px">
+          <span class="inf-area switch-text">Playground</span>
+          <div class="onoffswitch">
+            <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="exampleSwitch" tabindex="0" onclick="exampleSwitch()">
+            <label class="onoffswitch-label" for="exampleSwitch"></label>
+          </div>
+          <span class="inf-area switch-text">Examples</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm text-center">
+        <div id="imgBox1" class="img-box">
+          {% if imgName %}
+            <img id="imgInput" class="img-in-box" src="{{ url_for('static', filename=imgName) }}" alt="Uploaded Img">
+          {% else %}
+            <img id="imgInput" class="img-in-box" src="{{ url_for('static', filename='img/logo.png') }}" alt="logo">
+          {% endif %}
+          {% if imgNameEg %}
+            <img id="imgInputEg" class="img-in-box" src="{{ url_for('static', filename=imgNameEg) }}" alt="Example Img">
+          {% else %}
+            <img id="imgInputEg" class="img-in-box" src="{{ url_for('static', filename='img/logo.png') }}" alt="logo">
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <form id="predict" method="POST" action="{{ url_for('predict') }}">
+            {% if imgText %}
+              <textarea id="imgText" rows='3' placeholder="Please add the text associated with the meme here"
+                        name="texts" onchange="stashTextInput()">{{ imgText }}</textarea>
+            {% else %}
+              <textarea id="imgText" rows='3' placeholder="Please add the text associated with the meme here"
+                        name="texts" onchange="stashTextInput()"></textarea>
+            {% endif %}
+            {% if imgTextEg %}
+              <textarea disabled id="imgTextEg" rows='3' placeholder="Example text to the image"
+                        name="texts">{{ imgTextEg }}</textarea>
+            {% else %}
+              <textarea disabled id="imgTextEg" rows='3' placeholder="Example text to the image"
+                        name="texts"></textarea>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+      <div class="col-sm text-center">
+        <div id="imgBox2" class="img-box">
+          <div id="loader" style="display:none;" class="loader"></div>
+          {% if imgExp %}
+            <img id="imgExp" class="img-in-box" src="{{ url_for('static', filename=imgExp) }}" alt="Card image cap"
+                 data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover click" data-bs-html="true"
+                 data-bs-content='{{ imgMsg }}'>
+          {% else %}
+            <img id="imgExp" class="img-in-box" src="{{ url_for('static', filename='img/logo.png') }}"
+                 alt="Card image cap">
+          {% endif %}
+          {% if imgExpEg %}
+            <img id="imgExpEg" class="img-in-box" src="{{ url_for('static', filename=imgExpEg) }}" alt="Card image cap"
+                 data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover click" data-bs-html="true"
+                 data-bs-content='{{ imgMsgEg }}'>
+          {% else %}
+            <img id="imgExpEg" class="img-in-box" src="{{ url_for('static', filename='img/logo.png') }}"
+                 alt="Card image cap">
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if textExp %}
+            <img id="txtExp" class="img-in-box" src="{{ url_for('static', filename=textExp) }}"
+                 alt="Card image cap" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover click"
+                 data-bs-html="true" data-bs-content='{{ txtMsg }}'>
+          {% endif %}
+          {% if textExpEg %}
+            <img id="txtExpEg" class="img-in-box" src="{{ url_for('static', filename=textExpEg) }}"
+                 alt="Card image cap" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover click"
+                 data-bs-html="true" data-bs-content='{{ txtMsgEg }}'>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
