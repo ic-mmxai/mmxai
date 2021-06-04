@@ -103,6 +103,7 @@ def setup_model(user_model, model_type, model_path):
 
 
 def check_image(image_name):
+    #TODO: return numpy/PIL image object
     try:
         img = Image.open(image_name)
         img = np.array(img, dtype=np.uint8)

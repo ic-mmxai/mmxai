@@ -50,7 +50,7 @@ def lime_multimodal_explain(image_path, text, model, label_to_exp, num_samples=5
         return element[1]
 
     return (
-        sorted(text_exp_list, key=get_second, reverse=True),
+        sorted(text_exp_list, key=get_second, reverse=True), # useless
         exp_image,
         txt_message,
         img_message,

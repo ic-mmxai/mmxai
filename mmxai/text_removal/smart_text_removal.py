@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 import math
 
-from mmxai.text_removal.image_loader import loadImage
+from mmxai.utils.image_loader import loadImage
 
 
 class SmartTextRemover:
