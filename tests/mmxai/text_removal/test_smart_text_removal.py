@@ -9,7 +9,7 @@ url = "https://www.iqmetrix.com/hubfs/Meme%2021.jpg"
 img = Image.open(requests.get(url, stream=True).raw)
 
 def testCanInitSmartTextRemover():
-    remover = SmartTextRemover("mmxai/text_removal/frozen_east_text_detection.pb")
+    remover = SmartTextRemover()
     assert isinstance(remover.detector, cv.dnn_Net)
 
 def testConvertRgbToBgr():
@@ -139,7 +139,7 @@ def testInpaint():
     assert isinstance(img_inpainted, Image.Image)
 
 def initRemover():
-    return SmartTextRemover("mmxai/text_removal/frozen_east_text_detection.pb")
+    return SmartTextRemover()
 
 if __name__ == "__main__":
     testCanInitSmartTextRemover()
