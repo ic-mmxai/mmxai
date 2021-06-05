@@ -4,16 +4,20 @@ import numpy as np
 import math
 
 from mmxai.utils.image_loader import loadImage
-
+from mmxai.utils.cache_manager.cache_loader import loadFromCache
 
 class SmartTextRemover:
-    def __init__(self, detector_path):
+    def __init__(self, detector_path=None):
         """
         Function to instantiate SmartTextRemover object.
 
         INPUTS:
             detector_path - str: Path to the text detector.
         """
+        
+        if not detector_path:
+            detector_path = loadFromCache("frozen_east_text_detection.pb")
+
         self.__detector = cv.dnn.readNet(detector_path)
 
     @property
@@ -361,6 +365,6 @@ class SmartTextRemover:
 
 
 if __name__ == "__main__": # pragma: no cover
-    remover = SmartTextRemover("mmxai/text_removal/frozen_east_text_detection.pb")
+    remover = SmartTextRemover()
     img = remover.inpaint("https://www.iqmetrix.com/hubfs/Meme%2021.jpg")
     img.show()
