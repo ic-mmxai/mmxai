@@ -16,7 +16,7 @@ class SmartTextRemover:
         """
         
         if not detector_path:
-            detector_path = loadFromCache("frozen_east_text_detection.pb")
+            detector_path = loadFromCache("EAST_detector")
 
         self.__detector = cv.dnn.readNet(detector_path)
 
