@@ -243,9 +243,7 @@ def inpaint():
     if not os.path.isfile(save_path):
         # Load the inpainter
         try:
-            inpainter = SmartTextRemover(
-                "../mmxai/text_removal/frozen_east_text_detection.pb"
-            )
+            inpainter = SmartTextRemover()
         except:
             flash("Sorry, cannot load inpainter", "danger")
             return redirect(url_for("hateful_memes"))
