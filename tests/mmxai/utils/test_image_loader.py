@@ -1,4 +1,4 @@
-from mmxai.text_removal.image_loader import loadImage
+from mmxai.utils.image_loader import loadImage
 
 from PIL import Image, ImageChops
 import numpy as np
