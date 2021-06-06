@@ -33,7 +33,7 @@ def testCanGetTextAttribute():
 
 
 def testCanClassifyMultiModalInputs():
-    image_path = "https://img.17qq.com/images/ghhngkfnkwy.jpeg"
+    image_path = "tests/mmxai/interpretability/classification/torchray/extremal_perturbation/test.jpg"
     text = "How I want to say hello to Asian people"
     try:
         MODEL.classify(image_path, text)
@@ -44,7 +44,7 @@ def testCanClassifyMultiModalInputs():
 
 
 def testImageToTensorFromUrl():
-    url = "https://img.17qq.com/images/ghhngkfnkwy.jpeg"
+    url = "https://www.iqmetrix.com/hubfs/Meme%2021.jpg"
 
     image_tensor = MODEL.imageToTensor(url)
 
@@ -76,4 +76,10 @@ def testObjectIsCallableWithBothImageAndTextInputs():
 
 
 if __name__ == "__main__":
-    pass
+    testCanGetTextAttribute()
+    testCanGetTextAttribute()
+    testCanClassifyMultiModalInputs()
+    testImageToTensorFromUrl()
+    testImageToTensorFromLocalPath()
+    testObjectIsCallableWithOnlyImageInput()
+    testObjectIsCallableWithBothImageAndTextInputs()
