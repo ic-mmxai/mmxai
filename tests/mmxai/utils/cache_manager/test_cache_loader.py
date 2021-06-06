@@ -64,6 +64,8 @@ def checkCanDownloadFromGoogleDrive():
     path = loadFromCache("test_txt_google_drive", registry=MOCK_REGISTRY)
     assert path == os.path.expanduser(
         "~/.cache/mmxai/tests/test_file_to_download.txt")
+    
+    shutil.rmtree(os.path.expanduser("~/.cache/mmxai/tests/"))
 
 
 if __name__ == "__main__":
