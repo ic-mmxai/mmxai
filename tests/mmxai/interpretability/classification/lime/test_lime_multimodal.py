@@ -3,6 +3,7 @@ from mmxai.interpretability.classification.lime.lime_multimodal import *
 from mmf.models.mmbt import MMBT
 from mmf.models.visual_bert import VisualBERT
 
+import torch
 
 # prepare image, text and model for the explanation generation pipeline
 img_path = "tests/mmxai/interpretability/classification/lime/gun.jpeg"
@@ -14,10 +15,13 @@ model_mmbt = MMBT.from_pretrained("mmbt.hateful_memes.images")
 model_visualbert = VisualBERT.from_pretrained(
                     "visual_bert.finetuned.hateful_memes.from_coco"
                 )
-
+# model_visualbert.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
 
 # prediction using mock classification model object
 def classifier_fn(model, imgs, txts, zero_image=False, zero_text=False):
+
+    model.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
+
     inputs = zip(imgs, txts)
     res = np.zeros((len(imgs), 2))
     for i, this_input in enumerate(inputs):
@@ -214,3 +218,11 @@ def test_get_explanation():
 
 # coverage run -m pytest tests/mmxai/interpretability/classification/lime/test_lime_multimodal.py 
 # coverage report -m mmxai/interpretability/classification/lime/lime_multimodal.py
+
+if __name__ == "__main__":
+    test_explainer_init()
+    test_data_labels()
+    test_explain_instance()
+    test_explanation_image_case()
+    test_explanation_text()
+    test_get_explanation()
