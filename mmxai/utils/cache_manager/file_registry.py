@@ -37,6 +37,18 @@ FRCNN_MODEL = {
 REGISTERED_FILE.append(FRCNN_MODEL)
 
 def getResourceRecord(key: str, registry=REGISTERED_FILE):
+    """
+    Find the file record in the registry with matching key
+
+    INPUTS:
+        key - str: the file (record) key. The complete list of registered keys can be
+            found in mmxai/utils/cache_manager/file_registry.py
+        registry - list: list containing the record of registered files.
+    
+    RETURNS:
+        dict: record dict with matching key
+    """
+
     for entry in registry:
         if entry["key"] == key:
             return entry

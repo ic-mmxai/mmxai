@@ -7,6 +7,19 @@ from mmxai.utils.cache_manager.file_registry import getResourceRecord, REGISTERE
 
 
 def loadFromCache(key: str, registry=REGISTERED_FILE):
+    """
+    Using the key, locate the file from cache folder. If required file does not exit
+    in the cache, will attempt to download and cache it.
+
+    INPUTS:
+        key - str: the file (record) key. The complete list of registered keys can be
+            found in mmxai/utils/cache_manager/file_registry.py
+        registry - list: list containing the record of registered files.
+    
+    RETURNS:
+        str: absolute path to the cache file.
+
+    """
 
     resource = getResourceRecord(key, registry=registry)
 
