@@ -12,7 +12,7 @@ import torch
 import pytest
 
 # the path for train.jsonl file for the hateful memes data
-DATA_PATH = "/Users/zw_/Desktop/explainable-multimodal-classification/.zlocal/hm-data/train.jsonl"
+DATA_PATH = "tests/mmxai/interpretability/classification/shap/train.jsonl"
 # =============================== fixtures =====================================
 # hyperparams for fast run
 @pytest.fixture(scope="module")
@@ -265,3 +265,6 @@ def test_parse_text_values(global_data):
     txt_dics = explainer.parse_text_values(text_shap_values)
     # print(txt_dics)
     assert len(txt_dics) == len(global_data["target_texts"])
+
+if __name__ == "__main__":
+    test_utils_read_data()
