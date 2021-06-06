@@ -36,8 +36,8 @@ FRCNN_MODEL = {
 }
 REGISTERED_FILE.append(FRCNN_MODEL)
 
-def getResourceRecord(key: str):
-    for entry in REGISTERED_FILE:
+def getResourceRecord(key: str, registry=REGISTERED_FILE):
+    for entry in registry:
         if entry["key"] == key:
             return entry
     

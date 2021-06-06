@@ -3,12 +3,12 @@ import requests
 from tqdm import tqdm
 import tarfile, zipfile
 
-from mmxai.utils.cache_manager.file_registry import getResourceRecord
+from mmxai.utils.cache_manager.file_registry import getResourceRecord, REGISTERED_FILE
 
 
-def loadFromCache(key: str):
+def loadFromCache(key: str, registry=REGISTERED_FILE):
 
-    resource = getResourceRecord(key)
+    resource = getResourceRecord(key, registry=registry)
 
     cache_path = os.path.expanduser("~/.cache/mmxai")
     file_path = os.path.join(
@@ -105,7 +105,7 @@ def downloadFromGoogleDrive(id, download_path):
 
 
 
-def extractFile(resource, download_path):
+def extractFile(resource, download_path, remove=True):
 
     print(f"Extracting {download_path} ...")
 
@@ -118,7 +118,8 @@ def extractFile(resource, download_path):
             f"Compression_method for {resource['name']} not supported. " +
             "Records in mmxai.utils.cache_manager.file_register.py might be wrong.")
 
-    os.remove(download_path)
+    if remove:
+        os.remove(download_path)
 
     print(f"... Extrated files are: {extrated_names}")
 
