@@ -11,7 +11,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
@@ -32,29 +31,35 @@ jobs:
         pip install -e git+https://github.com/junqi-jiang/mmf#egg=mmf
         python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.6/index.html
         pip install .
-    #  TODO: add linter check when APIs are unified
-    # - name: Lint with flake8
-    #   run: |
-    #     # stop the build if there are Python syntax errors or undefined names
-    #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      if: ${{ always() }}
     - name: Test mmxai.interpretability.classification.lime
       run: |
         pytest tests/mmxai/interpretability/classification/lime
+      if: ${{ always() }}
     - name: Test mmxai.interpretability.classification.shap
       run: |
         pytest tests/mmxai/interpretability/classification/shap
+      if: ${{ always() }}
     - name: Test mmxai.interpretability.classification.torchray
       run: |
         pytest tests/mmxai/interpretability/classification/torchray
+      if: ${{ always() }}
     - name: Test mmxai.text_removal
       run: |
         pytest tests/mmxai/text_removal
+      if: ${{ always() }}
     - name: Test mmxai.utils
       run: |
         pytest tests/mmxai/utils
+      if: ${{ always() }}
     - name: Test web_app
       run: |
         pytest tests/web_app
+      if: ${{ always() }}
     
