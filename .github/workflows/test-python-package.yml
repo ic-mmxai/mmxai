@@ -28,7 +28,8 @@ jobs:
         pip install wheel
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install git+https://github.com/junqi-jiang/mmf
+        pip install -e git+https://github.com/junqi-jiang/mmf#egg=mmf
+        python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.6/index.html
         pip install .
     #  TODO: add linter check when APIs are unified
     # - name: Lint with flake8
@@ -39,4 +40,4 @@ jobs:
     #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest tests/mmxai/utils
+        pytest tests/mmxai/
