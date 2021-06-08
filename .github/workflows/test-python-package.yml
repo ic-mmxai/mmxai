@@ -38,6 +38,22 @@ jobs:
     #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
     #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
     #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
+    - name: Test mmxai.interpretability.classification.lime
       run: |
-        pytest tests/mmxai/
+        pytest tests/mmxai/interpretability/classification/lime
+    - name: Test mmxai.interpretability.classification.shap
+      run: |
+        pytest tests/mmxai/interpretability/classification/shap
+    - name: Test mmxai.interpretability.classification.torchray
+      run: |
+        pytest tests/mmxai/interpretability/classification/torchray
+    - name: Test mmxai.text_removal
+      run: |
+        pytest tests/mmxai/text_removal
+    - name: Test mmxai.utils
+      run: |
+        pytest tests/mmxai/utils
+    - name: Test web_app
+      run: |
+        pytest tests/web_app
+    
