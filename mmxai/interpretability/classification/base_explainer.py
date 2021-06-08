@@ -17,6 +17,7 @@ class BaseExplainer(object):
 
 		self.model = model
 		self.explainer_params = kwargs
+		self.num_labels = 2 # would be good to get this somehow
 
 		if self.__class__ is BaseExplainer:
 			if exp_method == "lime":
@@ -29,7 +30,7 @@ class BaseExplainer(object):
 
 
 
-	def explain(self, image, text, label_to_exp, **kwargs):
+	def explain(self, image=None, text:str = None, label_to_exp:int = 0, **kwargs):
 		"""Init function
 		Args:
             image: image path or numpy array or PIL Image object
@@ -43,4 +44,3 @@ class BaseExplainer(object):
 		self.text = text
 		self.label = label_to_exp
 		assert False, f"Cannot call virtual function 'explain' from a {self.__class__} object, please implement this function."
-

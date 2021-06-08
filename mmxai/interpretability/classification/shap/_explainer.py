@@ -1,4 +1,5 @@
 from . import _utils as utils
+from ..utils.image_loader import loadImage
 from ._plot import image as shap_image_plot
 import shap
 import numpy as np
@@ -10,10 +11,26 @@ import warnings
 
 
 class Explainer(object):
-    """ Use shap as explainer for classification models for image, text or both."""
+    """Use shap as explainer for classification models where input is image, text or both."""
 
-    supported_algos = ("partition", "permutation")
-    supported_modes = ("multimodal", "fix_image", "fix_text")
+    supported_algos = (
+        "auto",
+        "permutation",
+        "partition",
+        "tree",
+        "kernel",
+        "sampling",
+        "linear",
+        "deep",
+        "gradient",
+    )
+    supported_mm_algos = ("partition", "permutation")
+    supported_modes = (
+        "image_only",
+        "multimodal",
+        "multimodal_fix_image",
+        "multimodal_fix_text",
+    )
 
     def __init__(
         self,
@@ -31,11 +48,16 @@ class Explainer(object):
         """Initialise the explianer object
 
         Args:
-            model: any model that has a .classify method as the prediction method.
+            model: callable function
+                Any model that has a .classify method as the prediction method.
                 It should take a PIL image object and a string to give the classification output
-            algorithm: {"partition", "permutation"}
-                algorithm that is used in shap. Note that "fix_text" mode is only
+            algorithm: algorithms that SHAP support:
+                - available options for multimodal models are {"partition", "permutation"}
+                - algorithm that is used in shap. Note that "multimodal_fix_text" mode is only
                 supported for "partition" algorithm
+                - for "image_only" mode, any supported mode by SHAP can be passed in as we
+                simply call SHAP and explain the image relative to an all black image
+                {"auto", "permutation", "partition", "tree", "kernel", "sampling", "linear", "deep", or "gradient"}
             max_evals (optional): maximum evaluation time, default 300
             batch_size (optional): batch size, default 50
             tokenizer (optional): used for text input, can be from the transformer library
@@ -64,7 +86,6 @@ class Explainer(object):
             raise ValueError(f"Model object must have a .classify attribute.")
 
         # public features
-        self.model = model
         self.algorithm = algorithm
         self.max_evals = max_evals
         self.batch_size = batch_size
@@ -85,30 +106,47 @@ class Explainer(object):
         self._text_tokens = None
         self._text_ids = None
 
-    def explain(self, images: np.ndarray, texts: np.ndarray, mode: str):
+    def explain(self, image=None, text: str = None, mode: str = "multimodal"):
         """Main API to calculate shap values
 
         Args:
-            images: array of shape (N, D1, D2, C);
+            image: image path (str) or PIL image or array of shape (N, D1, D2, C). if an array:
                 N = number of samples
                 D1, D2, C = three channel image
-            texts: array of shape (N,)
-            mode: {"fix_image", "fix_text", "multimodal"}
-                "fix_image": explain the multimodal input with image features fixed
-                    the result will only have text features
-                "fix_text": explain the multimodal input with text features fixed
-                    the result will only have image features
+            text: str or array of shape (N,)
+            mode: {"image_only", "multimodal_fix_image", "multimodal_fix_text", "multimodal"}
+                "image_only": explain an image classification model, simply calls SHAP
+                "multimodal": explain the multimodal input
+                "multimodal_fix_image": explain the multimodal input with image features fixed during model evaluations
+                    the result will thus only have text features
+                "multimodal_fix_text": explain the multimodal input with text features fixed during model evaluations
+                    the result will thus only have image features
 
         Returns:
             a list of shap values calculated
             a tuple of (image_shap_values, text_shap_values) is returned if mode
             is "multimodal"
 
+        NOTE: for now to unify API with other methods, only N=1 in input dimension is expected. 
+            And in the output shapley values, the first dimension will not be N,
+            E.g. for image output the shape will be (D1, D2, C, num_labels_.
         Raises:
             ValueError: if non-supported mode is entered or shape mismatch
         """
         # TODO: handle empty strings
         # input validations
+
+        if image is None and text is None:
+            raise ValueError("Inputs cannot both be none!")
+
+        if not isinstance(text, np.ndarray) and text is not None:
+            texts = np.array(text)
+
+        # if only one instance is given
+        if not (isinstance(image, np.ndarray) and len(image.shape) == 4):
+            images = loadImage(image)
+            images = np.array(images)[np.newaxis, ...]
+
         if mode not in self.supported_modes:
             raise ValueError(f"This mode {mode} is not supported!")
 
@@ -117,36 +155,49 @@ class Explainer(object):
                 f"Shape mismatch, both inputs' first dimensions should be equal to the number of samples!"
             )
 
-        if (mode == "fix_text") and (self.algorithm == "permutation"):
+        if (mode != "image_only") and self.algorithm not in self.supported_mm_algos:
+            raise ValueError(
+                f"Only {self.supported_mm_algos} algorithms are supported for {mode} for now!"
+            )
+
+        if (mode == "multimodal_fix_text") and (self.algorithm == "permutation"):
             raise ValueError(
                 f"{self.algorithm} is not supported for {mode} as it will take too long!"
             )
 
         self._mode = mode
 
-        if mode == "fix_image":
+        if mode == "image_only":
+            background = np.zeros(images.shape, dtype=np.uint8)
+            explainer = shap.Explainer(self.model.classify, background, algorithm=self.algorithm)
+            return explainer(
+                images, max_evals=self.max_evals, batch_size=self.batch_size
+            )[0]
+
+        elif mode == "multimodal":
+            return self._multi_mode_shap_vals(images, texts)
+
+        elif mode == "multimodal_fix_image":
             # model should expect a PIL image
             images = utils.arr_to_img(images)
             # the shap algorithm will require a fully fledged tokenizer
             if isinstance(self.tokenizer, utils.WhitespaceTokenizer):
                 warnings.warn(
-                    "Changing tokenizer to pretrained 'distilbert-base-uncased' as fix_image mode requires a fully fledged tokenizer",
+                    "Changing tokenizer to pretrained 'distilbert-base-uncased' as multimodal_fix_image mode requires a fully fledged tokenizer",
                     Warning,
                 )
                 self.tokenizer = AutoTokenizer.from_pretrained(
                     "distilbert-base-uncased", use_fast=True
                 )
             masker = shap.maskers.Text(self.tokenizer)
-            # NOTE: using shap's masker, each token in the .data attribute in shap_value contain trailing space
-            # hence if needed, use "".join() to get original sentence
             return self._fixed_mode_shap_vals(texts, images, self._f_fixed_mode, masker)
 
-        elif mode == "fix_text":
+        elif mode == "multimodal_fix_text":
             masker = shap.maskers.Image("inpaint_telea", images[0].shape)
             return self._fixed_mode_shap_vals(images, texts, self._f_fixed_mode, masker)
 
-        elif mode == "multimodal":
-            return self._multi_mode_shap_vals(images, texts)
+        else:
+            return None
 
     @staticmethod
     def image_plot(shap_values: List, label_index: int = 0):
@@ -171,7 +222,6 @@ class Explainer(object):
             ), f"label index {label_index} is not within the range of model outputs for shap value {i}!"
             shap_val = value.values[np.newaxis, ..., label_index]
             data = value.data[np.newaxis, ..., label_index].astype(float)
-            # print(f"debug: {value.base_values}")
             label = f"base value: {value.base_values[label_index]:.4f}"
             figs.append(
                 shap_image_plot(
@@ -208,7 +258,7 @@ class Explainer(object):
         return out
 
     def _multi_mode_shap_vals(self, images, texts):
-        """ Helper stud to compute shap values in multimodal mode """
+        """Helper stud to compute shap values in multimodal mode"""
         image_shap_values = []
         text_shap_values = []
         # loop through samples
@@ -256,7 +306,7 @@ class Explainer(object):
             mm_shap_values = explainer(
                 to_explain, max_evals=self.max_evals, batch_size=self.batch_size
             )[0]
-            # select the only first element since output shape will have (1, ...)
+            # select the only first element since output shape will have (1, ...).. this is to unify with others
 
             # append to output lists
             image_shap_values.append(
@@ -276,7 +326,7 @@ class Explainer(object):
         return image_shap_values, text_shap_values
 
     def _fixed_mode_shap_vals(self, X, to_fix, func, masker):
-        """ Helper stud to compute shap values in single-modal mode where one sample is fixed """
+        """Helper stud to compute shap values in single-modal mode where one sample is fixed"""
         assert len(X) == len(to_fix)
         out = []
         explainer = shap.Explainer(func, masker, algorithm=self.algorithm)
@@ -284,12 +334,12 @@ class Explainer(object):
         # loop through samples
         for i in range(len(X)):
             self._curr_fixed = to_fix[i]
-            if self._mode == "fix_text" and X[i].shape != last_shape:
+            if self._mode == "multimodal_fix_text" and X[i].shape != last_shape:
                 # reinitialise explainer using new masker if shape different
                 masker = shap.maskers.Image("inpaint_telea", X[i].shape)
                 explainer = shap.Explainer(func, masker, algorithm=self.algorithm)
                 last_shape = X[i].shape
-            if self._mode == "fix_image" and self.algorithm == "permutation":
+            if self._mode == "multimodal_fix_image" and self.algorithm == "permutation":
                 # Workaround if max_evals given was too low, increase to acceptable value
                 self.max_evals = self._min_acceptable_evals(
                     len(self.tokenizer.tokenize(X[i]))
@@ -311,7 +361,7 @@ class Explainer(object):
             what is returned:
 
         """
-        out = np.zeros((len(combined_features), 2))  # output same shape
+        out = np.zeros((len(combined_features), self.num_labels))  # output same shape
 
         image_features = combined_features[:, : self._feature_split_point]
         text_features = combined_features[:, self._feature_split_point :]
@@ -323,9 +373,10 @@ class Explainer(object):
 
         for i, (text, image) in enumerate(zip(texts, images)):
             # classify, output is a tupe (index, score)
-            ind, score = self.model.classify(image, text).values()
-            out[i][ind] = score
-            out[i][1 - ind] = 1 - score
+            # ind, score = self.model.classify(image, text).values()
+            # out[i][ind] = score
+            # out[i][1 - ind] = 1 - score
+            out[i] = self.model.classify(image, text)[0]
 
         return out
 
@@ -345,24 +396,28 @@ class Explainer(object):
                 - N[i] = score of the image being i
 
         """
-        out = np.zeros((len(X), 2))  # output same shape
+        out = np.zeros((len(X), self.num_labels))  # output same shape
 
         # inputs neeeds to be [PIL.Image.Image], so transform from array if explaining image
-        X = utils.arr_to_img(X) if self._mode == "fix_text" else X
+        X = utils.arr_to_img(X) if self._mode == "multimodal_fix_text" else X
         # select fixed side, could be a strings or PIL image
         fixed = self._curr_fixed
 
         for i, x in enumerate(X):
             # classify should take (image, text), output is a tuple (index, score)
-            # if mode is "fix_text" fixed should be second and input will be images
-            ind, score = (
-                self.model.classify(x, fixed).values()
-                if self._mode == "fix_text"
-                else self.model.classify(fixed, x).values()
-            )
-
-            out[i][ind] = score
-            out[i][1 - ind] = 1 - score
+            # if mode is "multimodal_fix_text" fixed should be second and input will be images
+            # ind, score = (
+            #     self.model.classify(x, fixed).values()
+            #     if self._mode == "multimodal_fix_text"
+            #     else self.model.classify(fixed, x).values()
+            # )
+            # out[i][ind] = score
+            # out[i][1 - ind] = 1 - score
+            out[i] = (
+                self.model.classify(x, fixed)
+                if self._mode == "multimodal_fix_text"
+                else self.model.classify(fixed, x)
+            )[0]
 
         return out
 
