@@ -38,28 +38,30 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       if: ${{ always() }}
-    - name: Test mmxai.interpretability.classification.lime
-      run: |
-        pytest tests/mmxai/interpretability/classification/lime
-      if: ${{ always() }}
-    - name: Test mmxai.interpretability.classification.shap
-      run: |
-        pytest tests/mmxai/interpretability/classification/shap
-      if: ${{ always() }}
+    # - name: Test mmxai.interpretability.classification.lime
+    #   run: |
+    #     pytest tests/mmxai/interpretability/classification/lime
+    #   if: ${{ always() }}
+    # - name: Test mmxai.interpretability.classification.shap
+    #   run: |
+    #     pytest tests/mmxai/interpretability/classification/shap
+    #   if: ${{ always() }}
     - name: Test mmxai.interpretability.classification.torchray
       run: |
+        python tests/mmxai/interpretability/classification/torchray/extremal_perturbation/test_custom_mmbt.py
+        python tests/mmxai/interpretability/classification/torchray/extremal_perturbation/test_multimodal_extremal_perturbation.py
         pytest tests/mmxai/interpretability/classification/torchray
       if: ${{ always() }}
-    - name: Test mmxai.text_removal
-      run: |
-        pytest tests/mmxai/text_removal
-      if: ${{ always() }}
-    - name: Test mmxai.utils
-      run: |
-        pytest tests/mmxai/utils
-      if: ${{ always() }}
-    - name: Test web_app
-      run: |
-        pytest tests/web_app
-      if: ${{ always() }}
+    # - name: Test mmxai.text_removal
+    #   run: |
+    #     pytest tests/mmxai/text_removal
+    #   if: ${{ always() }}
+    # - name: Test mmxai.utils
+    #   run: |
+    #     pytest tests/mmxai/utils
+    #   if: ${{ always() }}
+    # - name: Test web_app
+    #   run: |
+    #     pytest tests/web_app
+    #   if: ${{ always() }}
     
