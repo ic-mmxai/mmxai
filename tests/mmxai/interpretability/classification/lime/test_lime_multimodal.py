@@ -15,7 +15,6 @@ model_mmbt = MMBT.from_pretrained("mmbt.hateful_memes.images")
 model_visualbert = VisualBERT.from_pretrained(
                     "visual_bert.finetuned.hateful_memes.from_coco"
                 )
-# model_visualbert.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
 
 # prediction using mock classification model object
 def classifier_fn(model, imgs, txts, zero_image=False, zero_text=False):
