@@ -3,8 +3,8 @@ import os, json, cv2, random
 from PIL import Image
 import numpy as np
 predictor,cfg = object_detection_predictor();
-im1 = cv2.imread("98564.png")
-im2 = cv2.imread("01236.png")
+im1 = cv2.imread("tests/mmxai/interpretability/classification/lime/98564.png")
+im2 = cv2.imread("tests/mmxai/interpretability/classification/lime/01236.png")
 
 def test_initialization():
     try:
@@ -25,3 +25,8 @@ def test_compare():
     compared_label = compare_labels(label1,label2)
     assert type(compared_label) == np.ndarray
     assert type(compared_label[0]) == np.float64
+
+if __name__ == "__main__":
+    test_initialization()
+    test_label()
+    test_compare()
