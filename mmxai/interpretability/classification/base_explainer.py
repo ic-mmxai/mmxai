@@ -1,7 +1,8 @@
 from mmxai.utils.image_loader import loadImage
-from base_explanation_result import ExplanationResult
-from lime.lime_explainer import LimeExplainer
-from .shap import Explainer as ShapExplainer
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from .lime import LimeExplainer
+	from .shap import Explainer as ShapExplainer
 
 
 class BaseExplainer(object):
@@ -21,13 +22,11 @@ class BaseExplainer(object):
 
 		if self.__class__ is BaseExplainer:
 			if exp_method == "lime":
-            	self.__class__ = explainers.LimeExplainer
-            	explainers.LimeExplainer.__init__(self, self.exp_method, self.model, self.image, self.text, self.label, **kwargs)
+				self.__class__ = explainers.LimeExplainer
+				explainers.LimeExplainer.__init__(self, self.model, exp_method, **kwargs)
 			elif exp_method == "shap":
 				self.__class__ = ShapExplainer
 				ShapExplainer.__init__(self, **kwargs)
-
-
 
 
 	def explain(self, image=None, text:str = None, label_to_exp:int = 0, **kwargs):
