@@ -3,7 +3,7 @@ from mmf.models.visual_bert import VisualBERT
 
 import os
 
-def vilBERTLoader():
+def loadPretrainedVilBERT():
     error_count = 1
 
     try:
@@ -18,7 +18,7 @@ def vilBERTLoader():
         else:
             raise
 
-def visualBERTLoader():
+def loadPretrainedVisualBERT():
     error_count = 1
 
     try:
@@ -54,5 +54,5 @@ def fixConfig(path):
         file.writelines(lines)
 
 if __name__ == "__main__":
-    # vilBERTLoader()
-    visualBERTLoader()
+    loadPretrainedVilBERT()
+    loadPretrainedVisualBERT()

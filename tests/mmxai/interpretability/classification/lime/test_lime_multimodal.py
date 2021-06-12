@@ -1,7 +1,7 @@
 from PIL import Image
 from mmxai.interpretability.classification.lime.lime_multimodal import *
 from mmf.models.mmbt import MMBT
-from mmf.models.visual_bert import VisualBERT
+from mmxai.utils.mmf_vBERT.vbert_loader import loadPretrainedVisualBERT
 
 import torch
 
@@ -12,9 +12,7 @@ text = "How I want to say hello to deliberately hateful Asian people, I hate the
 image_numpy = np.array(img_try)
 
 model_mmbt = MMBT.from_pretrained("mmbt.hateful_memes.images")
-model_visualbert = VisualBERT.from_pretrained(
-                    "visual_bert.finetuned.hateful_memes.from_coco"
-                )
+model_visualbert = loadPretrainedVisualBERT()
 
 # prediction using mock classification model object
 def classifier_fn(model, imgs, txts, zero_image=False, zero_text=False):

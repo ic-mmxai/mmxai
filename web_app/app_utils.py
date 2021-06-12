@@ -9,7 +9,7 @@ import torch
 import json
 import re
 from mmxai.onnx.onnxModel import ONNXInterface
-
+from mmxai.utils.mmf_vBERT.vbert_loader import loadPretrainedVilBERT, loadPretrainedVisualBERT
 
 class InputError(Exception):
     def __init__(self, msg):
@@ -66,13 +66,9 @@ def setup_model(user_model, model_type, model_path):
             elif model_type == "LateFusion":
                 model = LateFusion.from_pretrained("late_fusion.hateful_memes")
             elif model_type == "ViLBERT":
-                model = ViLBERT.from_pretrained(
-                    "vilbert.finetuned.hateful_memes.from_cc_original"
-                )
+                model = loadPretrainedVilBERT()
             else:  # visual bert
-                model = VisualBERT.from_pretrained(
-                    "visual_bert.finetuned.hateful_memes.from_coco"
-                )
+                model = loadPretrainedVisualBERT()
         except:
             raise InputError(
                 "Sorry, having trouble opening the models we provided, please try again later."
