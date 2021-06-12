@@ -3,8 +3,10 @@ from mmf.models.visual_bert import VisualBERT
 
 import os
 
+INITIAL_ERROR_COUNT = 1
+
 def loadPretrainedVilBERT():
-    error_count = 1
+    error_count = INITIAL_ERROR_COUNT
 
     try:
         return ViLBERT.from_pretrained(
@@ -19,7 +21,7 @@ def loadPretrainedVilBERT():
             raise
 
 def loadPretrainedVisualBERT():
-    error_count = 1
+    error_count = INITIAL_ERROR_COUNT
 
     try:
         return VisualBERT.from_pretrained(
