@@ -22,8 +22,11 @@ class BaseExplainer(object):
         """Init function
 
         Args:
-                        exp_method: {"lime", "shap", "torchray"}
+            exp_method: {"lime", "shap", "torchray"}
             model: ML predictor
+                it should take in input dataset(s) each of dimension (N, ...) 
+                where N is the number of samples in the datase.
+                its output should be of dimension (N, num_labels) of probabilities.
         """
 
         self.model = model
@@ -35,6 +38,7 @@ class BaseExplainer(object):
         self.explainer_params = kwargs
         self._mode = None
 
+        print(self.__class__)
         if self.__class__ is BaseExplainer:
             if exp_method == "lime":
                 self.__class__ = explainers.LimeExplainer
@@ -92,7 +96,7 @@ class BaseExplainer(object):
         else:
             raise ValueError("Both inputs cannot be None at the same time")
 
-        if image:
+        if image is not None:
             if isinstance(image, str):
                 im = Image.open("image.png").convert("RGB")
                 image = np.array(im)[np.newaxis, ...]
@@ -100,7 +104,7 @@ class BaseExplainer(object):
                 if image.shape[-1] != 3:
                     raise ValueError("Image arrays should have 3 channels.")
                 if len(image.shape) == 4:
-                    warnings("Note: currently only N=1 is supported for image input.")
+                    warnings.warn("Note: currently only N=1 is supported for image input.")
                     image = image[:1, ...]  # set N = 1
                 elif len(image.shape) == 3:
                     image = image[np.newaxis, ...]
@@ -109,7 +113,7 @@ class BaseExplainer(object):
             else:
                 raise ValueError("Unknown iamge input passed in.")
 
-        if text:
+        if text is not None:
             if isinstance(text, str):
                 text = np.array([text])
             elif isinstance(text, np.ndarray):
