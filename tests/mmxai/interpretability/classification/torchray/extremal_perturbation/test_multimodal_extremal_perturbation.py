@@ -7,11 +7,11 @@ from mmf.models.mmbt import MMBT
 
 
 Model = MMBT.from_pretrained("mmbt.hateful_memes.images")
-
+Model.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
 
 
 def test_input_error():
-    image_path = "hateful_asian.jpg"
+    image_path = "tests/mmxai/interpretability/classification/torchray/extremal_perturbation/test.jpg"
     image_tensor = image2tensor(image_path)
     text = "How I want to say hello to Asian people"
     model = Model
@@ -92,7 +92,7 @@ def test_input_error():
 
 
 def test_text_explainer_errors():
-    image_path = "hateful_asian.jpg"
+    image_path = "tests/mmxai/interpretability/classification/torchray/extremal_perturbation/test.jpg"
     image_tensor = image2tensor(image_path)
     text = "How I want to say hello to Asian people"
     model = Model
@@ -111,7 +111,7 @@ def test_text_explainer_errors():
 
 
 def test_multiModal_explainer_errors():
-    image_path = "hateful_asian.jpg"
+    image_path = "tests/mmxai/interpretability/classification/torchray/extremal_perturbation/test.jpg"
     image_tensor = image2tensor(image_path)
     text = "How I want to say hello to Asian people"
     model = Model
@@ -129,3 +129,8 @@ def test_multiModal_explainer_errors():
     assert(len(x.shape) == 4)
     assert(x.shape == image_tensor.shape)
 
+
+if __name__ == "__main__":
+    test_input_error()
+    test_text_explainer_errors()
+    test_multiModal_explainer_errors()
