@@ -17,10 +17,10 @@ class LimeExplainer(BaseExplainer):
 		super().__init__(model, exp_method, **kwargs)
 
 
-	def explain(self, image=None, text:str = None, label_to_exp:int = 0, **kwargs):
+	def explain(self, image=None, text = None, label_to_exp = 0, **kwargs):
 
-		self.image = np.array(loadImage(image))
-		self.text = text
+		self.image = image[0]
+		self.text = text[0]
 		self.label = label_to_exp
 		if "num_samples" in kwargs:
 			self.num_samples = kwargs[num_samples]
@@ -28,25 +28,47 @@ class LimeExplainer(BaseExplainer):
 			self.num_samples = 500
 
 		# define predict function to use in LIME
-		def multi_predict(model, imgs, txts, zero_image=False, zero_text=False):
+		'''def multi_predict(model, imgs, txts, zero_image=False, zero_text=False):
 			inputs = zip(imgs, txts)
 			res = np.zeros((len(imgs), 2))
 			for i, this_input in enumerate(inputs):
 				img = Image.fromarray(this_input[0])
 				txt = this_input[1]
 				try:
-					this_output = model.classify(
+					this_output = model(
 						img, txt, zero_image=zero_image, zero_text=zero_text
 					)
 				except:
-					this_output = model.classify(img, txt)
+					this_output = model(img, txt)
 				res[i][this_output["label"]] = this_output["confidence"]
 				res[i][1 - this_output["label"]] = 1 - this_output["confidence"]
-			return res	
+			return res'''
+
+		def multi_predict(model, imgs, txts, zero_image=False, zero_text=False):
+			try:
+				# the model can handle multiple inputs
+				res = model(imgs, txts)
+				return res
+			except:
+				# the model can only handle one input at a time
+				num_labels =  model(imgs[0], txts[0]).shape[1]
+				res = np.zeros((len(imgs), num_labels)) # place holder
+				for i in range(len(imgs)):
+					img = imgs[i]
+					txt = txts[i]
+					try:
+						this_output = model(
+							img, txt, zero_image=zero_image, zero_text=zero_text
+						)
+					except:
+						this_output = model(img, txt)
+					res[i] = this_output
+				return res
+
 
 	    # generate explanation
 		exp1 = LimeMultimodalExplainer(self.image, self.text, self.model)
-		explanation1 = exp1.explain_instance(self.multi_predict, self.num_samples)
+		explanation1 = exp1.explain_instance(multi_predict, self.num_samples)
 		txt_exp, img_exp, text_list, temp, mask = explanation1.get_explanation(self.label)
 
 	    # image explanation result visualisation
@@ -114,5 +136,7 @@ class LimeExplainer(BaseExplainer):
 		return im
 
 if __name__ == "__main__":
-	dummy_explainer = LimeExplainer(None, "lime")
+	from mmf.models.mmbt import MMBT
+	model = MMBT.from_pretrained("mmbt.hateful_memes.images")
+	dummy_explainer = LimeExplainer(model, "lime")
 	print("success")
