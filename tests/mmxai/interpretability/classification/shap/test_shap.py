@@ -8,11 +8,12 @@ from mmxai.interpretability.classification.shap import Explainer
 from mmxai.interpretability.classification.shap import utils
 from mmf.models.mmbt import MMBT
 import numpy as np
+import PIL.Image as Image
 import torch
 import pytest
 
 # the path for train.jsonl file for the hateful memes data
-DATA_PATH = "/Users/zw_/Desktop/explainable-multimodal-classification/.zlocal/hm-data/train.jsonl"
+DATA_PATH = "tests/mmxai/interpretability/classification/shap/train.jsonl"
 # =============================== fixtures =====================================
 # hyperparams for fast run
 @pytest.fixture(scope="module")
@@ -20,15 +21,28 @@ def global_data():
     max_evals = 2
     batch_size = 1
     model = MMBT.from_pretrained("mmbt.hateful_memes.images")
+    # Workaround for adding __call__ method to MMBT model
+    def call(self, images: np.ndarray, texts: np.ndarray):
+        out = np.zeros((images.shape[0], 2))
+        for i, (text, image) in enumerate(zip(texts, images)):
+            image = Image.fromarray(image)
+            ind, score = self.classify(image, text).values()
+            out[i][ind] = score
+            out[i][1 - ind] = 1 - score
+        return out
+    model.__class__.__call__ = call
+
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
     labels = utils.read_labels(DATA_PATH, True)
-    # ids = [5643] # single input
-    ids = [5643, 6937] # multiple inputs - tested
+    ids = [5643] # single input
+    # ids = [5643, 6937] # multiple inputs - tested
     target_labels = [l for l in labels if l["id"] in ids]
     target_images, target_texts = utils.parse_labels(
         target_labels, img_to_array=True, separate_outputs=True
     )
+    # reshape the images to the same shape (100, 100, 3)
+    target_images = np.vstack([im[np.newaxis, :100, :100, ...] for im in target_images])
 
     outputs = model_outputs(model, target_images, target_texts)
 
@@ -106,7 +120,7 @@ def test_explainer_init(global_data):
             max_evals=global_data["max_evals"],
             batch_size=global_data["batch_size"],
         )
-    assert str(e.value) == "Model object must have a .classify attribute."
+    assert "callable" in str(e.value) 
     print(f"{str(e.value)=}")
 
 # test input validations
@@ -122,14 +136,6 @@ def test_explain_errors(global_data):
             global_data["target_images"], global_data["target_texts"], "another_mode"
         )
     assert "mode" in str(e) and "not supported" in str(e.value)
-    print(f"{str(e.value)=}")
-
-
-    with pytest.raises(ValueError) as e:
-        text_shap_values = explainer.explain(
-            global_data["target_images"][0], global_data["target_texts"], "fix_image"
-        )
-    assert "Shape mismatch" in str(e.value)
     print(f"{str(e.value)=}")
 
 
@@ -149,10 +155,10 @@ def test_explain_partition(global_data):
     assert isinstance(explainer.tokenizer, utils.WhitespaceTokenizer)
 
     text_shap_values = explainer.explain(
-        global_data["target_images"], global_data["target_texts"], "fix_image"
+        global_data["target_images"], global_data["target_texts"], "multimodal_fix_image"
     )
     image_shap_values = explainer.explain(
-        global_data["target_images"], global_data["target_texts"], "fix_text"
+        global_data["target_images"], global_data["target_texts"], "multimodal_fix_text"
     )
 
     # assert length and shapes
@@ -197,11 +203,11 @@ def test_explain_permutation(global_data):
         batch_size=global_data["batch_size"],
     )
     text_shap_values = explainer.explain(
-        global_data["target_images"], global_data["target_texts"], "fix_image"
+        global_data["target_images"], global_data["target_texts"], "multimodal_fix_image"
     )
     with pytest.raises(ValueError) as e:
         image_shap_values = explainer.explain(
-            global_data["target_images"], global_data["target_texts"], "fix_text"
+            global_data["target_images"], global_data["target_texts"], "multimodal_fix_text"
         )
     assert "it will take too long" in str(e.value)
     print(f"{str(e.value)=}")
@@ -244,7 +250,7 @@ def test_image_plot(global_data):
         batch_size=global_data["batch_size"],
     )
     image_shap_values = explainer.explain(
-        global_data["target_images"], global_data["target_texts"], "fix_text"
+        global_data["target_images"], global_data["target_texts"], "multimodal_fix_text"
     )
     plots = explainer.image_plot(image_shap_values)
     # plots[0].show()
@@ -260,8 +266,11 @@ def test_parse_text_values(global_data):
         batch_size=global_data["batch_size"],
     )
     text_shap_values = explainer.explain(
-        global_data["target_images"], global_data["target_texts"], "fix_image"
+        global_data["target_images"], global_data["target_texts"], "multimodal_fix_image"
     )
     txt_dics = explainer.parse_text_values(text_shap_values)
     # print(txt_dics)
     assert len(txt_dics) == len(global_data["target_texts"])
+
+if __name__ == "__main__":
+    test_utils_read_data()

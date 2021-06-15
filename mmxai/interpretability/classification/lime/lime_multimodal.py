@@ -21,8 +21,6 @@ from sklearn.calibration import CalibratedClassifierCV
 from PIL import Image
 from skimage.segmentation import mark_boundaries
 
-# from object_detection import *
-
 
 class MultiModalExplanation(object):
     def __init__(
@@ -83,6 +81,7 @@ class MultiModalExplanation(object):
             self.class_names = class_names
             self.top_labels = None
             self.predict_proba = None
+
 
     def get_image_and_mask(
         self,
@@ -147,6 +146,7 @@ class MultiModalExplanation(object):
                     temp[segments == f, c] = np.max(image)
             return temp, mask
 
+
     def as_list(self, label=1, **kwargs):
         """
         Returns the explanation as a list.
@@ -163,6 +163,7 @@ class MultiModalExplanation(object):
         ans = self.domain_mapper.map_exp_ids(self.local_exp_txt[label_to_use], **kwargs)
         ans = [(x[0], float(x[1])) for x in ans]
         return ans
+
 
     def get_explanation(self, label, num_features=10, which_exp="positive"):
 
@@ -293,6 +294,7 @@ class MultiModalExplanation(object):
         img_message = img_message + ratio_message
         return txt_message, img_message, txt_exp_list, temp, mask
 
+
     def get_txt_img_ratio(self):
         """
         Get informative message about the weight ratio between text and image features
@@ -352,6 +354,7 @@ class LimeMultimodalExplainer(object):
         self.feature_selection = feature_selection
         self.class_names = class_names
         self.base = LimeBase(kernel_fn, verbose=False, random_state=self.random_state)
+
 
     def explain_instance(self, classifier_fn, n_samples, top_labels=2):
 
@@ -428,6 +431,7 @@ class LimeMultimodalExplainer(object):
 
         return ret_exp
 
+
     def data_labels(self, num_samples, classifier_fn, detection=False):
         """
         Steps of this function:
@@ -437,6 +441,7 @@ class LimeMultimodalExplainer(object):
             3. concatenate text and image features, store into 'data',
                 also append the original input and prediction of it
             4. calculate distances
+
             Arguments:
                 classifier_fn: classification function to give predictions for given texts and images
                 num_samples: size of the neighborhood to learn the linear model
@@ -468,7 +473,6 @@ class LimeMultimodalExplainer(object):
             1, doc_size + 1, num_samples
         )  # num_samples - 1
         data_txt = np.ones((num_samples, doc_size))
-        # data[0] = np.ones(doc_size)
         features_range = range(doc_size)
         inverse_data_txt = []
 

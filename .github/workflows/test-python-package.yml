@@ -1,0 +1,65 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python package
+
+# on: [push, pull_request]
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel
+        python -m pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -e git+https://github.com/junqi-jiang/mmf#egg=mmf
+        python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.6/index.html
+        pip install -e .
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      if: ${{ always() }}
+    - name: Test mmxai.interpretability.classification.lime
+      run: |
+        pytest tests/mmxai/interpretability/classification/lime
+      if: ${{ always() }}
+    - name: Test mmxai.interpretability.classification.shap
+      run: |
+        pytest tests/mmxai/interpretability/classification/shap
+      if: ${{ always() }}
+    - name: Test mmxai.interpretability.classification.torchray
+      run: |
+        pytest tests/mmxai/interpretability/classification/torchray
+      if: ${{ always() }}
+    - name: Test mmxai.text_removal
+      run: |
+        pytest tests/mmxai/text_removal
+      if: ${{ always() }}
+    - name: Test mmxai.utils
+      run: |
+        pytest tests/mmxai/utils
+      if: ${{ always() }}
+    - name: Test web_app
+      run: |
+        pytest tests/web_app
+      if: ${{ always() }}
+    

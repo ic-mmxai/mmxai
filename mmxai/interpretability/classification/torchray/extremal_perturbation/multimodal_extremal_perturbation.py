@@ -52,6 +52,7 @@ def image2tensor(image_path):
     p = transforms.Compose([transforms.Scale((224, 224))])
 
     img, i = imsc(p(img), quiet=False)
+    img = img.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
     return torch.reshape(img, (1, 3, 224, 224))
 
 def PIL2tensor(image_PIL):

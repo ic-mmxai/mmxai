@@ -43,7 +43,7 @@ class FeatureModelInterface(nn.Module):
         extra_params = {"data_dir": config.data_dir}
         self.processor_dict = build_processors(config.processors, **extra_params)
 
-    def classify(self, image: ImageType, text: str, image_tensor = None,zero_image=False, zero_text=False):
+    def __call__(self, image: ImageType, text: str, image_tensor = None,zero_image=False, zero_text=False):
         """Classifies a given image and text in it into Hateful/Non-Hateful.
         Image can be a url or a local path or you can directly pass a PIL.Image.Image
         object. Text needs to be a sentence containing all text in the image.
@@ -57,9 +57,6 @@ class FeatureModelInterface(nn.Module):
         Returns:
             {"label": 0, "confidence": 0.56}
         """
-
-
-
 
         if image_tensor != None:
             image_tenosr = torch.unsqueeze(image_tenosr,0)
@@ -77,8 +74,39 @@ class FeatureModelInterface(nn.Module):
                 image_dir=image, save_single=False
             )
 
+            # expected case, only support passing one instance
+            elif isinstance(image, np.ndarray):
+                if len(image.shape) == 3:
+                    image = Image.fromarray(image.astype('uint8'), 'RGB')
 
-        text = self.processor_dict["text_processor"]({"text": text})
+                elif len(image.shape) == 4:
+                    if image.shape[0] == 1:
+                        image = image[0, :]
+                        image = Image.fromarray(image.astype('uint8'), 'RGB')
+                    else:
+                        raise ValueError("This model currently cannot process multiple inputs.")
+                        return None
+                else: 
+                    raise ValueError("Image input dimension is not correct.")
+                    return None
+
+            else:
+                ValueError("Only type str and numpy.ndarray are supported")
+                return None
+
+
+        if isinstance(text, str):
+            text = self.processor_dict["text_processor"]({"text": text})
+        elif isinstance(text, list) or isinstance(text, np.ndarray):
+            if len(text) == 1:
+                text = self.processor_dict["text_processor"]({"text": text[0]})
+            else:
+                raise ValueError("This model currently cannot process multiple inputs.")
+                return None
+        else:
+            raise ValueError("Only type str and list are supported")
+            return None              
+
         sample = Sample()
         sample.text = text["text"]
         if "input_ids" in text:
@@ -137,6 +165,7 @@ class FeatureModelInterface(nn.Module):
 
         if image_tensor != None:
             return scores
-        confidence, label = torch.max(scores, dim=1)
+        else:
+            return scores.detach().numpy()
 
-        return {"label": label.item(), "confidence": confidence.item()}
+            

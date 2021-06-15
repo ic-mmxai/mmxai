@@ -39,7 +39,7 @@ class GeneralInterface(nn.Module):
         extra_params = {"data_dir": config.data_dir}
         self.processor_dict = build_processors(config.processors, **extra_params)
 
-    def classify(
+    def __call__(
         self,
         image: ImageType,
         text: str,
@@ -78,10 +78,40 @@ class GeneralInterface(nn.Module):
                 else:
                     image = tv_helpers.default_loader(image)
 
-            image = self.processor_dict["image_processor"](image)
-            sample.image = image
+            elif isinstance(image, np.ndarray):
+                if len(image.shape) == 3:
+                    image = Image.fromarray(image.astype('uint8'), 'RGB')
+                    image = self.processor_dict["image_processor"](image)
+                    sample.image = image
+                elif len(image.shape) == 4:
+                    if image.shape[0] == 1:
+                        image = image[0, :]
+                        image = Image.fromarray(image.astype('uint8'), 'RGB')
+                        image = self.processor_dict["image_processor"](image)
+                        sample.image = image                   
+                    else:
+                        raise ValueError("This model currently cannot process multiple inputs.")
+                        return None
+                else: 
+                    raise ValueError("Image input dimension is not correct.")
+                    return None
 
-        text = self.processor_dict["text_processor"]({"text": text})
+            else:
+                raise ValueError("Only type str and numpy.ndarray are supported")
+                return None
+
+        if isinstance(text, str):
+            text = self.processor_dict["text_processor"]({"text": text})
+        elif isinstance(text, list) or isinstance(text, np.ndarray):
+            if len(text) == 1:
+                text = self.processor_dict["text_processor"]({"text": text[0]})
+            else:
+                raise ValueError("This model currently cannot process multiple inputs.")
+                return None
+        else:
+            raise ValueError("Only type str and list are supported")
+            return None              
+
 
         sample.text = text["text"]
         if "input_ids" in text:
@@ -95,7 +125,7 @@ class GeneralInterface(nn.Module):
 
         if image_tensor != None:
             return scores
+        else:
+            return scores.detach().numpy()
 
-        confidence, label = torch.max(scores, dim=1)
-
-        return {"label": label.item(), "confidence": confidence.item()}
+            
