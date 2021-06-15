@@ -5,21 +5,7 @@ import sklearn
 from sklearn.utils import check_random_state
 import scipy as sp
 import copy
-
-
-"""
-__all__ = [
-    "extremal_perturbation",
-    "Perturbation",
-    "simple_reward",
-    "contrastive_reward",
-    "BLUR_PERTURBATION",
-    "FADE_PERTURBATION",
-    "PRESERVE_VARIANT",
-    "DELETE_VARIANT",
-    "DUAL_VARIANT",
-]
-"""
+from mmxai.interpretability.classification.base_explainer import BaseExplainer
 
 import math
 import matplotlib
@@ -58,8 +44,6 @@ PRESERVE_VARIANT = "preserve"
 DELETE_VARIANT = "delete"
 """Deletion game for :func:`extremal_perturbation`."""
 
-# DUAL_VARIANT = "dual"
-"""Combined game for :func:`extremal_perturbation`."""
 
 
 def image2tensor(image_path):
@@ -69,6 +53,66 @@ def image2tensor(image_path):
 
     img, i = imsc(p(img), quiet=False)
     return torch.reshape(img, (1, 3, 224, 224))
+
+def PIL2tensor(image_PIL):
+    # convert image to torch tensor with shape (1 * 3 * 224 * 224)
+    p = transforms.Compose([transforms.Scale((224, 224))])
+
+    img, i = imsc(p(image_PIL), quiet=False)
+    return torch.reshape(img, (1, 3, 224, 224))
+
+# -------------------------- Explainer Object-----------------------------------------
+class TorchrayExplainer(BaseExplainer):
+    def __init__(model,exp_method, model, image, text, label_to_exp, **kwargs):
+        super().__init__(exp_method, model, image, text, label_to_exp, **kwargs)
+
+        self.model = model
+        self.imagePIL = image
+        self.image_tensor = PIL2tensor(self.imagePIL)
+        self.text = text
+        self.target = label_to_exp
+        self.explainer_params = kwargs
+    def explain(self, 
+        image_path,
+        areas=[0.1],
+        perturbation=BLUR_PERTURBATION,
+        max_iter=800,
+        num_levels=8,
+        step=7,
+        sigma=21,
+        jitter=True,
+        variant=PRESERVE_VARIANT,
+        print_iter=None,
+        debug=False,
+        reward_func=simple_reward,
+        resize=False,
+        resize_mode="bilinear",
+        smooth=0,
+        text_explanation_plot=False):
+
+        mask_, hist, x, summary, conclusion = multi_extremal_perturbation(
+            self.model,
+            self.image_tensor,
+            image_path,
+            self.text,
+            self.target,
+            areas,
+            perturbation,
+            max_iter,
+            num_levels,
+            step,sigma,
+            jitter,
+            variant,
+            print_iter,
+            debug,
+            reward_func,
+            resize,
+            resize_mode,
+            smooth,
+            text_explanation_plot)
+        return mask_, hist, x, summary, conclusion 
+
+
 
 
 # --------------------------explainer of both image & text----------------------------
@@ -186,7 +230,6 @@ def multi_extremal_perturbation(
         )
 
     # Disable gradients for model parameters.
-    # TODO(av): undo on leaving the function.
     for p in model.parameters():
         p.requires_grad_(False)
 
@@ -242,12 +285,13 @@ def multi_extremal_perturbation(
             x = torch.flip(x, dims=(3,))
 
         # Evaluate the model on the masked data.
-        # y = model(x) <-- !!! This is original line
-        # !!! Changed by Chenyu !!!
-        y = model.classify(image_path, input_text, image_tensor=torch.squeeze(x, 0))
+        if input_text != None :
+            y = model.classify(image_path, input_text, image_tensor=torch.squeeze(x, 0))
+        else:
+            y = model.classify(image_path, '', image_tensor=torch.squeeze(x, 0))
 
         # update text
-        if t % 402 == 0 and max_iter >= 800:
+        if (t+1) % 400 == 0 and max_iter >= 800 and input_text != None:
             Result = explain_text(input_text, torch.squeeze(x, 0), model)
             Not_hateful, Hateful = text_rebuilder(input_text, Result)
             temp_text = Hateful
@@ -287,45 +331,6 @@ def multi_extremal_perturbation(
         # Adjust the regulariser/area constraint weight.
         regul_weight *= 1.0035
 
-        # Diagnostics.
-        """
-        debug_this_iter = debug and (t in (0, max_iter - 1)
-                                     or regul_weight / regul_weight_last >= 2)
-
-        if (print_iter is not None and t % print_iter == 0) or debug_this_iter:
-            print("[{:04d}/{:04d}]".format(t + 1, max_iter), end="")
-            for i, area in enumerate(areas):
-                print(" [area:{:.2f} loss:{:.2f} reg:{:.2f}]".format(
-                    area,
-                    hist[i, 0, -1],
-                    hist[i, 1, -1]), end="")
-            print()
-
-        if debug_this_iter:
-            regul_weight_last = regul_weight
-            for i, a in enumerate(areas):
-                plt.figure(i, figsize=(20, 6))
-                plt.clf()
-                ncols = 4 if variant == DUAL_VARIANT else 3
-                plt.subplot(1, ncols, 1)
-                plt.plot(hist[i, 0].numpy())
-                plt.plot(hist[i, 1].numpy())
-                plt.plot(hist[i].sum(dim=0).numpy())
-                plt.legend(('energy', 'regul', 'both'))
-                plt.title(f'target area:{a:.2f}')
-                plt.subplot(1, ncols, 2)
-                imsc(mask[i], lim=[0, 1])
-                plt.title(
-                    f"min:{mask[i].min().item():.2f}"
-                    f" max:{mask[i].max().item():.2f}"
-                    f" area:{mask[i].sum() / mask[i].numel():.2f}")
-                plt.subplot(1, ncols, 3)
-                imsc(x[i])
-                if variant == DUAL_VARIANT:
-                    plt.subplot(1, ncols, 4)
-                    imsc(x[i + len(areas)])
-                plt.pause(0.001)
-            """
     mask_ = mask_.detach()
 
     # Resize saliency map.
@@ -337,14 +342,16 @@ def multi_extremal_perturbation(
             mask_, sigma=smooth * min(mask_.shape[2:]), padding_mode="constant"
         )
 
-    # (BOJIAMAO)----integrate text explainer
+    if input_text != None:
+        text_Result = explain_text(input_text, torch.squeeze(input_img, 0), model)
+        if text_explanation_plot:
+            explainer_plot(input_text, text_Result)
+        summary, conclusion = Conclusion(input_text, text_Result)
+    else:
+        summary = None
+        conclusion = None
 
-    text_Result = explain_text(input_text, torch.squeeze(input_img, 0), model)
-    if text_explanation_plot:
-        explainer_plot(input_text, text_Result)
-
-    summary, conclusion = Conclusion(input_text, text_Result)
-
+        
     # summary is the high level summary of the text explainer,
     # and the conclusion are the different words and corresponding scores
     return mask_, hist, x, summary, conclusion
