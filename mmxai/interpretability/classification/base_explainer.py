@@ -41,8 +41,8 @@ class BaseExplainer(object):
         print(self.__class__)
         if self.__class__ is BaseExplainer:
             if exp_method == "lime":
-                self.__class__ = explainers.LimeExplainer
-                explainers.LimeExplainer.__init__(
+                self.__class__ = LimeExplainer
+                LimeExplainer.__init__(
                     self, self.model, exp_method, **kwargs
                 )
             elif exp_method == "shap":

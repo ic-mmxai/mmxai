@@ -22,8 +22,8 @@ class LimeExplainer(BaseExplainer):
 		self.image = image[0]
 		self.text = text[0]
 		self.label = label_to_exp
-		if "num_samples" in kwargs:
-			self.num_samples = kwargs[num_samples]
+		if "num_samples" in kwargs.keys():
+			self.num_samples = kwargs["num_samples"]
 		else:
 			self.num_samples = 500
 
@@ -84,7 +84,7 @@ class LimeExplainer(BaseExplainer):
 		def get_second(element):
 			return element[1]
 		text_exp_list = sorted(text_exp_list, key=get_second, reverse=True)
-		txt_img = _text_visualisation(text_exp_list, self.label)
+		txt_img = self._text_visualisation(text_exp_list)
 
 	    # result
 		res = dict()
