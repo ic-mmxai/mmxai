@@ -2,10 +2,7 @@ from PIL import Image
 import numpy as np
 from typing import TYPE_CHECKING, Optional, Union
 import warnings
-
-if TYPE_CHECKING:
-    from .lime import LimeExplainer
-    from .shap import Explainer as ShapExplainer
+from .. import classification
 
 
 class BaseExplainer(object):
@@ -41,13 +38,13 @@ class BaseExplainer(object):
         print(self.__class__)
         if self.__class__ is BaseExplainer:
             if exp_method == "lime":
-                self.__class__ = LimeExplainer
-                LimeExplainer.__init__(
+                self.__class__ = classification.LimeExplainer
+                classification.LimeExplainer.__init__(
                     self, self.model, exp_method, **kwargs
                 )
             elif exp_method == "shap":
-                self.__class__ = ShapExplainer
-                ShapExplainer.__init__(self, **kwargs)
+                self.__class__ = classification.ShapExplainer
+                classification.ShapExplainer.__init__(self, self.model, **kwargs)
 
             elif exp_method == "torchray":
                 self.__class__ = TorchRayExplainer

@@ -4,7 +4,7 @@ test_shap.py
 test file for mmxai.interpretability.classification.shap
 ===============================================================================
 """
-from mmxai.interpretability.classification.shap import Explainer
+from mmxai.interpretability.classification.shap import ShapExplainer as Explainer
 from mmxai.interpretability.classification.shap import utils
 from mmf.models.mmbt import MMBT
 import numpy as np

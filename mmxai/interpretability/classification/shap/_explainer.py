@@ -10,7 +10,7 @@ from skimage.segmentation import slic, quickshift
 import warnings
 
 
-class Explainer(BaseExplainer):
+class ShapExplainer(BaseExplainer):
     """Use shap as explainer for classification models where input is image, text or both."""
 
     supported_algos = (
