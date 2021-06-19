@@ -49,6 +49,10 @@ class BaseExplainer(object):
                 self.__class__ = ShapExplainer
                 ShapExplainer.__init__(self, **kwargs)
 
+            elif exp_method == "torchray":
+                self.__class__ = TorchRayExplainer
+                ShapExplainer.__init__(self, **kwargs)
+
     def explain(
         self,
         image: Optional[Union[np.ndarray, str]] = None,
@@ -124,3 +128,10 @@ class BaseExplainer(object):
                 raise ValueError("Unknown text input passed in.")
 
         return image, text
+
+
+
+
+
+     --》 exp
+init --》 base ——》 

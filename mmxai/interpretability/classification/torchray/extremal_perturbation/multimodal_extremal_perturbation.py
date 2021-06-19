@@ -5,7 +5,7 @@ import sklearn
 from sklearn.utils import check_random_state
 import scipy as sp
 import copy
-from mmxai.interpretability.classification.base_explainer import BaseExplainer
+
 
 import math
 import matplotlib
@@ -62,65 +62,19 @@ def PIL2tensor(image_PIL):
     img, i = imsc(p(image_PIL), quiet=False)
     return torch.reshape(img, (1, 3, 224, 224))
 
-# -------------------------- Explainer Object-----------------------------------------
-class TorchrayExplainer(BaseExplainer):
-    def __init__(model,exp_method, model, image, text, label_to_exp, **kwargs):
-        super().__init__(exp_method, model, image, text, label_to_exp, **kwargs)
 
-        self.model = model
-        self.imagePIL = image
-        self.image_tensor = PIL2tensor(self.imagePIL)
-        self.text = text
-        self.target = label_to_exp
-        self.explainer_params = kwargs
-    def explain(self, 
-        image_path,
-        areas=[0.1],
-        perturbation=BLUR_PERTURBATION,
-        max_iter=800,
-        num_levels=8,
-        step=7,
-        sigma=21,
-        jitter=True,
-        variant=PRESERVE_VARIANT,
-        print_iter=None,
-        debug=False,
-        reward_func=simple_reward,
-        resize=False,
-        resize_mode="bilinear",
-        smooth=0,
-        text_explanation_plot=False):
-
-        mask_, hist, x, summary, conclusion = multi_extremal_perturbation(
-            self.model,
-            self.image_tensor,
-            image_path,
-            self.text,
-            self.target,
-            areas,
-            perturbation,
-            max_iter,
-            num_levels,
-            step,sigma,
-            jitter,
-            variant,
-            print_iter,
-            debug,
-            reward_func,
-            resize,
-            resize_mode,
-            smooth,
-            text_explanation_plot)
-        return mask_, hist, x, summary, conclusion 
 
 
 
 
 # --------------------------explainer of both image & text----------------------------
+
+
+
+
 def multi_extremal_perturbation(
     model,
     input_img,
-    image_path,
     input_text,
     target,
     areas=[0.1],
@@ -190,26 +144,6 @@ def multi_extremal_perturbation(
         of dimension
     """
 
-
-    if len(input_img.shape) != 4:
-        raise ValueError(f"Image tensor is suppose to be 4 dimensional")
-
-    if len(input_text) == 0:
-        raise ValueError(f"Empty text")
-
-    if not hasattr(model, "classify"):
-        raise ValueError(f"Model object must have a .classify attribute")
-
-    if target not in [0,1]:
-        raise ValueError(f"Target can be either 0 or 1")
-
-
-
-    if isinstance(areas, float):
-        areas = [areas]
-
-    if max(areas) >= 1.0 or min(areas) <= 0.0:
-        raise ValueError(f"Mask must be a list contains a float value between 0 to 1")
         
     momentum = 0.9
     learning_rate = 0.01
@@ -264,6 +198,21 @@ def multi_extremal_perturbation(
     )
     hist = torch.zeros((len(areas), 2, 0))
 
+
+
+    if input_img == None:
+
+        if input_text != None:
+            text_Result = explain_text(input_text, None, model)
+            if text_explanation_plot:
+                explainer_plot(input_text, text_Result)
+            summary, conclusion = Conclusion(input_text, text_Result)
+
+        result["text_exp"] = summary
+        result["high_level_exp"] = conclusion
+        return result
+
+
     for t in range(max_iter):
 
         pmask.requires_grad_(True)
@@ -286,13 +235,16 @@ def multi_extremal_perturbation(
             x = torch.flip(x, dims=(3,))
 
         # Evaluate the model on the masked data.
-        if input_text != None :
-            y = model.classify(image_path, input_text, image_tensor=torch.squeeze(x, 0))
+
+        if input_text == None:
+            inputx = x.reshape(1,x.shape[1],x.shape[2],3)
+            y = model(inputx,input_text)
         else:
-            y = model.classify(image_path, '', image_tensor=torch.squeeze(x, 0))
+            inputx = x.reshape(1,x.shape[1],x.shape[2],3)
+            y = model(inputx)
 
         # update text
-        if (t+1) % 400 == 0 and max_iter >= 800 and input_text != None:
+        if (t+1) % 400 == 0 and max_iter >= 800 and input_text != None and target <=1:
             Result = explain_text(input_text, torch.squeeze(x, 0), model)
             Not_hateful, Hateful = text_rebuilder(input_text, Result)
             temp_text = Hateful
@@ -344,7 +296,8 @@ def multi_extremal_perturbation(
         )
 
     if input_text != None:
-        text_Result = explain_text(input_text, torch.squeeze(input_img, 0), model)
+        inputImage = input_img.reshape(1,input_img.shape[1],input_img.shape[2],3)
+        text_Result = explain_text(input_text, inputImage, model)
         if text_explanation_plot:
             explainer_plot(input_text, text_Result)
         summary, conclusion = Conclusion(input_text, text_Result)
@@ -355,7 +308,13 @@ def multi_extremal_perturbation(
         
     # summary is the high level summary of the text explainer,
     # and the conclusion are the different words and corresponding scores
-    return mask_, hist, x, summary, conclusion
+    result = dict()
+    result["mask_tensor"] = mask_
+    result["energy_during_training"] = hist
+    result["image_exp"] = x
+    result["text_exp"] = summary
+    result["high_level_exp"] = conclusion
+    return result
 
 
 # --------------------------text explainer functions----------------------------------
@@ -448,12 +407,20 @@ def text_explainer(string, img_tensor, classifier_fn):
     labels = []
 
     for i in range(len(masked_text)):
-        temp = (
-            classifier_fn.classify("NAN", masked_text[i], img_tensor)
-            .detach()
-            .cpu()
-            .numpy()
-        )
+        if img_tensor != None:
+            temp = (
+                classifier_fn(img_tensor,masked_text[i])
+                .detach()
+                .cpu()
+                .numpy()
+            )
+        else:
+            temp = (
+                classifier_fn(masked_text[i])
+                .detach()
+                .cpu()
+                .numpy()
+            )
 
         labels.append(temp[0])
 
@@ -529,42 +496,6 @@ def explainer_plot(input_text, Result):
     plt.text(min(Result) / 2, len(Result) - 1, "Hateful")
     plt.show()
 
-
-def text_explanation_presentation(input_text, image_tensor, image_path, model):
-    """
-    args :
-        input_text : original text
-        image_tensor : image tensor (3,224,244)
-        image_path : url/path to the image
-        model : classification model that is going to be explained
-
-    returns :
-        print the result of text input explanation
-    """
-
-    judge = ["Not Hateful", "Hateful"]
-    Result = explain_text(input_text, image_tensor, model)
-    explainer_plot(input_text, Result)
-
-    Not_hateful, Hateful = text_rebuilder(input_text, Result)
-    output = model.classify(image_path, input_text)
-    print("\n")
-    print(input_text)
-    print(judge[output["label"]], " confidence: ", output["confidence"])
-
-    # towards label 0 (Not Hateful)
-    output = model.classify(image_path, Not_hateful[:-1])
-    print("\n")
-    print(Not_hateful[:-1])
-    print("Ground Truth : Not Hateful")
-    print(judge[output["label"]], " confidence: ", output["confidence"])
-
-    # towards label 1 (Hateful)
-    output = model.classify(image_path, Hateful[:-1])
-    print("\n")
-    print(Hateful[:-1])
-    print("Ground Truth : Hateful")
-    print(judge[output["label"]], " confidence: ", output["confidence"])
 
 
 
