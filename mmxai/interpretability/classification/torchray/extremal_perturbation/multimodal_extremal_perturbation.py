@@ -67,9 +67,20 @@ def PIL2tensor(image_PIL):
 
 
 
-# --------------------------explainer of both image & text----------------------------
+
+# --------------------------explainer of both text input only----------------------------
 
 def text_extremal_perturbation(model,input_text,target = 0,text_explanation_plot = False):
+    """ Compute text explanation of the model
+        Args:
+            model (:class:`torch.nn.Module`): model.
+            input_text (:string): text that is going to be explained)
+            target (:int): the binary or multiple label of the classification target
+            text_explanation_plot (:boolean): whether visualize explanation result
+        Return:
+            result (:dictionary) set of different explanation results
+
+    """
     result = dict()
     text_Result = explain_text(input_text, None, model)
     if text_explanation_plot:
@@ -78,9 +89,12 @@ def text_extremal_perturbation(model,input_text,target = 0,text_explanation_plot
 
     result["text_exp"] = summary
     result["high_level_exp"] = conclusion
+    result["mask_tensor"] = None
+    result["energy_during_training"] = None
+    result["image_exp"] = None
     return result
 
-
+# --------------------------explainer of both image & text----------------------------
 def multi_extremal_perturbation(
     model,
     input_img,
@@ -148,9 +162,7 @@ def multi_extremal_perturbation(
             computing them. Defaults to 0.
 
     Returns:
-        A tuple containing the masks and the energies.
-        The masks are stored as a :class:`torch.Tensor`
-        of dimension
+        result (:dictionary) set of different explanation results including image and text
     """
 
         
@@ -233,7 +245,6 @@ def multi_extremal_perturbation(
             x = torch.flip(x, dims=(3,))
 
         # Evaluate the model on the masked data.
-
         if input_text != None:
             inputx = x.reshape(1,x.shape[2],x.shape[3],3)
             y = model(inputx,input_text)
@@ -293,6 +304,7 @@ def multi_extremal_perturbation(
             mask_, sigma=smooth * min(mask_.shape[2:]), padding_mode="constant"
         )
 
+    # if No text input only explain the image 
     if input_text != None:
         inputImage = input_img.reshape(1,input_img.shape[1],input_img.shape[2],3)
         text_Result = explain_text(input_text, inputImage, model)

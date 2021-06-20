@@ -118,8 +118,6 @@ class TorchRayExplainer(BaseExplainer):
                 self.text_explanation_plot
                 )
 
-
-
         return result
 
     def _parse_inputs(self, image=None, text=None):
