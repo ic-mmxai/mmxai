@@ -69,7 +69,16 @@ def PIL2tensor(image_PIL):
 
 # --------------------------explainer of both image & text----------------------------
 
+def text_extremal_perturbation(model,input_text,target = 0,text_explanation_plot = False):
+    result = dict()
+    text_Result = explain_text(input_text, None, model)
+    if text_explanation_plot:
+        explainer_plot(input_text, text_Result)
+        summary, conclusion = Conclusion(input_text, text_Result)
 
+    result["text_exp"] = summary
+    result["high_level_exp"] = conclusion
+    return result
 
 
 def multi_extremal_perturbation(
@@ -148,7 +157,10 @@ def multi_extremal_perturbation(
     momentum = 0.9
     learning_rate = 0.01
     regul_weight = 300
-    device = input_img.device
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+    input_img = input_img.to(device)
 
     regul_weight_last = max(regul_weight / 2, 1)
 
@@ -199,20 +211,6 @@ def multi_extremal_perturbation(
     hist = torch.zeros((len(areas), 2, 0))
 
 
-
-    if input_img == None:
-
-        if input_text != None:
-            text_Result = explain_text(input_text, None, model)
-            if text_explanation_plot:
-                explainer_plot(input_text, text_Result)
-            summary, conclusion = Conclusion(input_text, text_Result)
-
-        result["text_exp"] = summary
-        result["high_level_exp"] = conclusion
-        return result
-
-
     for t in range(max_iter):
 
         pmask.requires_grad_(True)
@@ -236,11 +234,11 @@ def multi_extremal_perturbation(
 
         # Evaluate the model on the masked data.
 
-        if input_text == None:
-            inputx = x.reshape(1,x.shape[1],x.shape[2],3)
+        if input_text != None:
+            inputx = x.reshape(1,x.shape[2],x.shape[3],3)
             y = model(inputx,input_text)
         else:
-            inputx = x.reshape(1,x.shape[1],x.shape[2],3)
+            inputx = x.reshape(1,x.shape[2],x.shape[3],3)
             y = model(inputx)
 
         # update text

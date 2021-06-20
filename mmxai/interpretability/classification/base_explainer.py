@@ -48,7 +48,7 @@ class BaseExplainer(object):
 
             elif exp_method == "torchray":
                 self.__class__ = TorchRayExplainer
-                ShapExplainer.__init__(self, **kwargs)
+                TorchRayExplainer.__init__(self, self.model, exp_method, **kwargs)
 
     def explain(
         self,
@@ -130,5 +130,3 @@ class BaseExplainer(object):
 
 
 
-     --》 exp
-init --》 base ——》 

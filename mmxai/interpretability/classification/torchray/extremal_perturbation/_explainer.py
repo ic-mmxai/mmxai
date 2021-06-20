@@ -1,10 +1,10 @@
 
-
+import numpy as np
 from mmxai.interpretability.classification.base_explainer import BaseExplainer
 
-
+import warnings
 from torchray.attribution.extremal_perturbation import extremal_perturbation
-from mmxai.interpretability.classification.torchray.extremal_perturbation.multimodal_extremal_perturbation import multi_extremal_perturbation
+from mmxai.interpretability.classification.torchray.extremal_perturbation.multimodal_extremal_perturbation import multi_extremal_perturbation, text_extremal_perturbation
 from mmxai.interpretability.classification.torchray.extremal_perturbation.multimodal_extremal_perturbation import image2tensor,PIL2tensor
 from torchray.attribution.extremal_perturbation import (
     MaskGenerator,
@@ -29,6 +29,7 @@ class TorchRayExplainer(BaseExplainer):
 
     def __init__(self,
         model, 
+        exp_method,
         areas=[0.1],
         perturbation=BLUR_PERTURBATION,
         max_iter=800,
@@ -57,14 +58,14 @@ class TorchRayExplainer(BaseExplainer):
             raise ValueError(f"This variant method {variant} is not supported!")
         if reward_func not in reward_funcs:
             raise ValueError(f"This reward function {reward_func} is not supported!")
-        super().__init__(model)
+        super().__init__(model,exp_method)
 
 
         self.model = model
         self.areas=areas
         self.perturbation=perturbation
         self.max_iter=max_iter
-        self.num_levels=v
+        self.num_levels=num_levels
         self.step=step
         self.sigma=sigma
         self.jitter=jitter
@@ -86,7 +87,7 @@ class TorchRayExplainer(BaseExplainer):
         self._mode = None
         image, text = self._parse_inputs(image,text)
 
-
+        result = None
         if self._mode == "multimodal" or self._mode == "image_only":
             result = multi_extremal_perturbation(
                 self.model,
@@ -97,7 +98,8 @@ class TorchRayExplainer(BaseExplainer):
                 self.perturbation,
                 self.max_iter,
                 self.num_levels,
-                self.step,sigma,
+                self.step,
+                self.sigma,
                 self.jitter,
                 self.variant,
                 self.print_iter,
@@ -106,7 +108,17 @@ class TorchRayExplainer(BaseExplainer):
                 self.resize,
                 self.resize_mode,
                 self.smooth,
-                self.text_explanation_plot)
+                self.text_explanation_plot
+                )
+
+        elif self._mode == "text_only":
+            result = text_extremal_perturbation(self.model,
+                text[0],
+                target,
+                self.text_explanation_plot
+                )
+
+
 
         return result
 
@@ -133,7 +145,7 @@ class TorchRayExplainer(BaseExplainer):
             if isinstance(image, str):
 
                 image = image2tensor(image)
-            if isinstance(image, np.ndarray):
+            elif isinstance(image, np.ndarray):
                 if image.shape[-1] != 3:
                     raise ValueError("Image arrays should have 3 channels.")
                 if len(image.shape) == 4:
@@ -145,6 +157,8 @@ class TorchRayExplainer(BaseExplainer):
                     image = image.reshape(1,image.shape[-1],image.shape[1],image.shape[2])
                 else:
                     raise ValueError("Image array must of 3 or 4 dimensions.")
+
+                image = torch.from_numpy(image)
             else:
                 raise ValueError("Unknown iamge input passed in.")
 
@@ -158,6 +172,7 @@ class TorchRayExplainer(BaseExplainer):
             else:
                 raise ValueError("Unknown text input passed in.")
 
+
         return image, text
 
 
@@ -165,6 +180,7 @@ class TorchRayExplainer(BaseExplainer):
 if __name__ == "__main__":
     from mmf.models.mmbt import MMBT
     model = MMBT.from_pretrained("mmbt.hateful_memes.images")
-    dummy_explainer = TorchRayExplainer(model)
-    dummy_explainer.explain(text="hello")
+    dummy_explainer = TorchRayExplainer(model,"torchray")
+    #.img = np.zeros((1,224,224,3),dtype = np.dtype('d'))
+    dummy_explainer.explain(image="/Users/louitech_zero/Desktop/Imperial College London/CS/GroupProject/mmxai/mmxai/interpretability/classification/torchray/extremal_perturbation/test_img.jpeg" ,text="hello")
     print("success")
